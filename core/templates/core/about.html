@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<!-- Hero Section -->
+<section class="bg-dark text-white text-center py-5">
+    <div class="container">
+        <h1 class="display-4 fw-bold">Giới thiệu về Oneway Store</h1>
+        <p class="lead mt-3">
+            Hệ thống cửa hàng cung cấp sản phẩm công nghệ chính hãng – uy tín – giá tốt.
+        </p>
+    </div>
+</section>
+
+<!-- About Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <img src="{% static 'images/store.jpg' %}" class="img-fluid rounded shadow" alt="Oneway Store">
+            </div>
+            <div class="col-md-6">
+                <h2 class="fw-bold mb-3">Chúng tôi là ai?</h2>
+                <p>
+                    Oneway Store được thành lập với mong muốn mang đến cho khách hàng 
+                    những sản phẩm công nghệ chất lượng cao, chính hãng với mức giá hợp lý.
+                </p>
+                <p>
+                    Chúng tôi cam kết cung cấp dịch vụ hậu mãi tận tâm và trải nghiệm mua sắm hiện đại.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Vision & Mission -->
+<section class="bg-light py-5">
+    <div class="container text-center">
+        <h2 class="fw-bold mb-4">Tầm nhìn & Sứ mệnh</h2>
+        <div class="row">
+            <div class="col-md-6">
+                <h4 class="fw-bold">Tầm nhìn</h4>
+                <p>Trở thành chuỗi cửa hàng công nghệ hàng đầu tại Việt Nam.</p>
+            </div>
+            <div class="col-md-6">
+                <h4 class="fw-bold">Sứ mệnh</h4>
+                <p>Mang công nghệ chất lượng đến gần hơn với mọi người.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Core Values -->
+<section class="py-5">
+    <div class="container text-center">
+        <h2 class="fw-bold mb-4">Giá trị cốt lõi</h2>
+        <div class="row">
+            <div class="col-md-4">
+                <h5>Uy tín</h5>
+                <p>Luôn đặt sự tin tưởng của khách hàng lên hàng đầu.</p>
+            </div>
+            <div class="col-md-4">
+                <h5>Chất lượng</h5>
+                <p>Sản phẩm chính hãng – bảo hành rõ ràng.</p>
+            </div>
+            <div class="col-md-4">
+                <h5>Tận tâm</h5>
+                <p>Hỗ trợ khách hàng nhanh chóng và chuyên nghiệp.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Team Section -->
+<section class="bg-light py-5">
+    <div class="container text-center">
+        <h2 class="fw-bold mb-4">Đội ngũ của chúng tôi</h2>
+        <div class="row">
+            <div class="col-md-4">
+                <img src="{% static 'images/team1.jpg' %}" class="rounded-circle mb-3" width="150">
+                <h5>Nguyễn Văn A</h5>
+                <p>Giám đốc điều hành</p>
+            </div>
+            <div class="col-md-4">
+                <img src="{% static 'images/team2.jpg' %}" class="rounded-circle mb-3" width="150">
+                <h5>Trần Thị B</h5>
+                <p>Quản lý cửa hàng</p>
+            </div>
+            <div class="col-md-4">
+                <img src="{% static 'images/team3.jpg' %}" class="rounded-circle mb-3" width="150">
+                <h5>Lê Văn C</h5>
+                <p>Chuyên viên tư vấn</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call To Action -->
+<section class="bg-dark text-white text-center py-5">
+    <div class="container">
+        <h2 class="fw-bold mb-3">Khám phá sản phẩm của chúng tôi ngay hôm nay!</h2>
+        <a href="{% url 'product_list' %}" class="btn btn-warning btn-lg">
+            Xem sản phẩm
+        </a>
+    </div>
+</section>
+
+{% endblock %}
