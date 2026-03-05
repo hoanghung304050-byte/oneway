@@ -1,0 +1,156 @@
+{% extends 'core/home.html' %}
+
+{% block title %}Hệ thống cửa hàng ONEWAY{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+<style>
+    /* Bắt buộc phải set chiều cao cho bản đồ */
+    #map { height: 600px; width: 100%; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+</style>
+{% endblock %}
+
+{% block content %}
+<h2 class="mb-4 text-uppercase fw-bold"><i class="fa-solid fa-map-location-dot"></i> Bản Đồ Hệ Thống</h2>
+
+<div class="row mb-4 bg-white p-3 shadow-sm rounded-3 mx-0">
+    <div class="col-md-8 mb-2 mb-md-0">
+        <label class="form-label fw-bold">Chọn cửa hàng muốn đến:</label>
+        <select id="store-selector" class="form-select border-primary cursor-pointer">
+            <option value="nearest">📍 Tự động chọn Cửa hàng gần nhất</option>
+            </select>
+    </div>
+    <div class="col-md-4 d-flex align-items-end">
+        <button id="find-me-btn" class="btn btn-primary w-100 fw-bold">
+            <i class="fa-solid fa-route"></i> Bắt đầu chỉ đường
+        </button>
+    </div>
+</div>
+
+<div id="map"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+
+<script>
+    // 1. KHỞI TẠO BẢN ĐỒ
+    // Set tọa độ mặc định và mức độ zoom là 13
+    var map = L.map('map').setView([10.762622, 106.660172], 13);
+
+    // Sử dụng tile layer của OpenStreetMap
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // 2. NHẬN DỮ LIỆU THẬT TỪ POSTGRESQL & POSTGIS
+    var stores = {{ stores_json|safe }};
+    var routingControl = null;
+
+    // === LẤY THẺ DROPDOWN ĐỂ NHÉT DỮ LIỆU VÀO ===
+    var storeSelector = document.getElementById('store-selector');
+
+    // Lặp qua mảng dữ liệu: Vừa cắm cờ, vừa đưa vào Dropdown
+    stores.forEach(function(store, index) {
+        // Cắm cờ (Marker) lên bản đồ
+        var marker = L.marker([store.lat, store.lng]).addTo(map);
+        var popupContent = `<b>${store.name}</b><br>${store.address}<br>SĐT: ${store.phone}`;
+        marker.bindPopup(popupContent);
+
+        // Đổ tên cửa hàng vào thanh Dropdown để người dùng chọn
+        var option = document.createElement('option');
+        option.value = index; 
+        option.text = store.name + " - " + store.address;
+        storeSelector.appendChild(option);
+    });
+
+    // 3. CHỨC NĂNG TÌM VỊ TRÍ & CHỈ ĐƯỜNG
+    document.getElementById('find-me-btn').addEventListener('click', function() {
+        if (!navigator.geolocation) {
+            alert("Trình duyệt của bạn không hỗ trợ định vị!");
+            return;
+        }
+
+        if (stores.length === 0) {
+            alert("Hệ thống chưa có cửa hàng nào. Vui lòng thêm cửa hàng trong trang Quản trị!");
+            return;
+        }
+
+        // Đổi trạng thái nút bấm thành Đang tải...
+        var btn = document.getElementById('find-me-btn');
+        var originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang tìm đường...';
+        btn.disabled = true;
+
+        // Lấy định vị hiện tại của người dùng
+        navigator.geolocation.getCurrentPosition(function(position) {
+            var userLat = position.coords.latitude;
+            var userLng = position.coords.longitude;
+            var userLocation = L.latLng(userLat, userLng);
+
+            // Cắm cờ vị trí người dùng
+            L.marker(userLocation).addTo(map).bindPopup("<b>Vị trí của bạn</b>").openPopup();
+            map.setView(userLocation, 14);
+
+            // === KIỂM TRA XEM NGƯỜI DÙNG CHỌN GÌ TRONG DROPDOWN ===
+            var selectedValue = storeSelector.value;
+            var destinationStore = null;
+
+            if (selectedValue === 'nearest') {
+                // Nếu chọn "Cửa hàng gần nhất": Chạy thuật toán tìm điểm gần nhất
+                destinationStore = stores[0];
+                var minDistance = userLocation.distanceTo(L.latLng(parseFloat(destinationStore.lat), parseFloat(destinationStore.lng)));
+
+                for (var i = 1; i < stores.length; i++) {
+                    var d = userLocation.distanceTo(L.latLng(parseFloat(stores[i].lat), parseFloat(stores[i].lng)));
+                    if (d < minDistance) {
+                        minDistance = d;
+                        destinationStore = stores[i];
+                    }
+                }
+                alert("Hệ thống xác định cửa hàng gần bạn nhất là: " + destinationStore.name);
+            } else {
+                // Nếu chọn cửa hàng cụ thể: Lấy đúng cửa hàng đó
+                destinationStore = stores[selectedValue];
+            }
+
+            // Xóa đường đi cũ nếu có
+            if (routingControl != null) {
+                map.removeControl(routingControl);
+            }
+
+            var destLat = parseFloat(destinationStore.lat);
+            var destLng = parseFloat(destinationStore.lng);
+
+            // VẼ ĐƯỜNG ĐI (Dùng server Đức & tiếng Anh để không bị lỗi)
+            routingControl = L.Routing.control({
+                waypoints: [
+                    userLocation, 
+                    L.latLng(destLat, destLng) 
+                ],
+                router: L.Routing.osrmv1({
+                    serviceUrl: 'https://routing.openstreetmap.de/routed-car/route/v1'
+                }),
+                routeWhileDragging: false,
+                language: 'en',
+                showAlternatives: false,
+                fitSelectedRoutes: true,
+                lineOptions: {
+                    styles: [{color: '#007bff', opacity: 0.8, weight: 6}]
+                }
+            }).addTo(map);
+
+            // Phục hồi lại nút bấm ban đầu
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+
+        }, function() {
+            alert("Không thể lấy được vị trí của bạn.");
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+    });
+</script>
+{% endblock %}

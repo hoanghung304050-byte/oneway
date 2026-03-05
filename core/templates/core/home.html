@@ -2,19 +2,192 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Trang chủ - ONEWAY</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ONEWAY - Hệ Thống Bán Lẻ Điện Thoại Hàng Đầu{% endblock %}</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .navbar-brand { font-weight: 800; font-size: 1.5rem; letter-spacing: 1px; color: #ffeb3b !important; }
+        .navbar { box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .hero-banner { background: linear-gradient(135deg, #0d6efd, #0dcaf0); color: white; padding: 60px 0; border-radius: 10px; margin-bottom: 30px; }
+        .product-card { transition: transform 0.3s, box-shadow 0.3s; border: none; border-radius: 12px; overflow: hidden; }
+        .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
+        .product-img { height: 250px; object-fit: cover; background-color: #fff; padding: 20px; }
+        .price-text { color: #dc3545; font-weight: bold; font-size: 1.2rem; }
+        footer { background-color: #212529; color: #adb5bd; padding: 40px 0 20px; margin-top: 50px; }
+        footer a { color: #adb5bd; text-decoration: none; transition: color 0.3s; }
+        footer a:hover { color: #fff; }
+    </style>
+
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <nav>
-        <ul>
-            <li><a href="/">Trang chủ</a></li>
-            <li><a href="/gioi-thieu/">Giới thiệu</a></li>
-            <li><a href="/bao-hanh/">Bảo hành (Bản đồ GIS)</a></li>
-            <li><a href="/lien-he/">Liên hệ</a></li>
-        </ul>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}"><i class="fa-solid fa-mobile-screen-button"></i> ONEWAY</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-toggle="target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <form class="d-flex mx-auto w-50">
+                    <input class="form-control me-2 rounded-pill" type="search" placeholder="Tìm kiếm iPhone, Samsung..." aria-label="Search">
+                    <button class="btn btn-outline-light rounded-pill px-4" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+                </form>
+
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold" href="{% url 'product_list' %}"><i class="fa-solid fa-fire"></i> Khuyến Mãi</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold text-warning" href="{% url 'map_view' %}"><i class="fa-solid fa-map-location-dot"></i> Hệ Thống Cửa Hàng</a>
+                    </li>
+                    <li class="nav-item ms-3">
+                        <a class="btn btn-light position-relative"  href="{% url 'cart_view' %}">
+                            <i class="fa-solid fa-cart-shopping"></i> Giỏ Hàng
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">2</span>
+                        </a>
+                    </li>
+                    <li class="nav-item ms-3">
+                        <a class="btn btn-outline-light" href="{% url 'admin:index' %}"><i class="fa-solid fa-user-tie"></i> Quản trị viên</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
     </nav>
+
+    <div class="container mt-4">
+        {% block content %}
+        
+        <div class="hero-banner text-center shadow">
+            <h1 class="display-4 fw-bold">Trải Nghiệm Công Nghệ Đỉnh Cao</h1>
+            <p class="lead">Giảm giá lên đến 30% cho các dòng Smartphone cao cấp trong tuần lễ vàng.</p>
+            <a href="#" class="btn btn-warning btn-lg fw-bold px-5 rounded-pill mt-3 text-dark">Mua Ngay</a>
+        </div>
+
+        <div class="row text-center mb-5">
+            <h3 class="mb-4 fw-bold text-uppercase">Danh mục nổi bật</h3>
+            <div class="col-md-3 col-6 mb-3"><div class="p-3 bg-white shadow-sm rounded-3 fw-bold"><i class="fa-brands fa-apple fs-2 d-block mb-2"></i>iPhone</div></div>
+            <div class="col-md-3 col-6 mb-3"><div class="p-3 bg-white shadow-sm rounded-3 fw-bold"><i class="fa-solid fa-robot fs-2 d-block mb-2"></i>Samsung</div></div>
+            <div class="col-md-3 col-6 mb-3"><div class="p-3 bg-white shadow-sm rounded-3 fw-bold"><i class="fa-solid fa-mobile fs-2 d-block mb-2"></i>Xiaomi</div></div>
+            <div class="col-md-3 col-6 mb-3"><div class="p-3 bg-white shadow-sm rounded-3 fw-bold"><i class="fa-solid fa-headphones fs-2 d-block mb-2"></i>Phụ Kiện</div></div>
+        </div>
+
+        <h3 class="mb-4 fw-bold text-uppercase">Sản Phẩm Bán Chạy</h3>
+        <div class="row">
+            
+            {% for product in products %}
+            <div class="col-md-3 col-sm-6 mb-4">
+                <div class="card product-card h-100">
+                    
+                    {% if product.image_url %}
+                    <img src="{{ product.image_url }}" class="card-img-top product-img" alt="{{ product.name }}">
+                    {% else %}
+                    <img src="https://via.placeholder.com/250" class="card-img-top product-img" alt="No image">
+                    {% endif %}
+                    
+                    <div class="card-body d-flex flex-column">
+                        <a href="{% url 'product_detail' product.id %}" class="text-decoration-none text-dark">
+                            <h5 class="card-title fs-6">{{ product.name }}</h5>
+                        </a>
+                        <p class="price-text mt-auto mb-2">{{ product.price }} ₫</p>
+                       <button data-product="{{ product.id }}" data-action="add" class="btn btn-primary w-100 mt-2 update-cart">
+                            <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            {% empty %}
+            <div class="col-12 text-center text-muted my-5">
+                <i class="fa-solid fa-box-open fs-1 mb-3"></i>
+                <p>Chưa có sản phẩm nào được thêm vào hệ thống.</p>
+            </div>
+            {% endfor %}
+            </div>
+        
+        {% endblock %}
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <h5 class="text-white fw-bold"><i class="fa-solid fa-mobile-screen-button"></i> ONEWAY STORE</h5>
+                    <p class="small mt-3">Hệ thống bán lẻ điện thoại, phụ kiện thông minh chính hãng uy tín nhất hiện nay. Tích hợp bản đồ GIS dẫn đường thông minh.</p>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <h5 class="text-white fw-bold">Chính Sách</h5>
+                    <ul class="list-unstyled small mt-3">
+                        <li class="mb-2"><a href="#">Chính sách bảo hành</a></li>
+                        <li class="mb-2"><a href="#">Chính sách đổi trả</a></li>
+                        <li class="mb-2"><a href="#">Giao hàng & Thanh toán</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <h5 class="text-white fw-bold">Hệ Thống Cửa Hàng</h5>
+                    <p class="small mt-3 mb-2"><i class="fa-solid fa-location-dot me-2"></i>Trải dài khắp cả nước.</p>
+                    <a href="{% url 'map_view' %}" class="btn btn-outline-warning btn-sm mt-2"><i class="fa-solid fa-map"></i> Xem Bản Đồ GIS</a>
+                </div>
+            </div>
+            <hr class="mt-4 border-secondary">
+            <div class="text-center small mt-3">
+                &copy; 2026 ONEWAY STORE. Đồ án Website tích hợp GIS.
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <h1>Chào mừng đến với hệ thống cửa hàng ONEWAY</h1>
-    <p>Trang web bán điện thoại và định vị cửa hàng.</p>
+    {% block extra_js %}{% endblock %}
+    <script>
+    var csrftoken = '{{ csrf_token }}';
+</script>
+
+<script>
+    // Lấy tất cả các nút có chữ update-cart
+    var updateBtns = document.getElementsByClassName('update-cart')
+
+    for (var i = 0; i < updateBtns.length; i++) {
+        updateBtns[i].addEventListener('click', function(){
+            var productId = this.dataset.product
+            var action = this.dataset.action
+            
+            console.log('ID Sản phẩm:', productId, 'Hành động:', action)
+            
+            // Gọi hàm gửi dữ liệu
+            updateUserOrder(productId, action)
+        })
+    }
+
+    function updateUserOrder(productId, action){
+        console.log('Đang gửi dữ liệu mượt mà về Backend...')
+
+        var url = '/update_item/'
+
+        fetch(url, {
+            method:'POST',
+            headers:{
+                'Content-Type':'application/json',
+                'X-CSRFToken': csrftoken, // Gửi kèm token bảo vệ chống hack
+            }, 
+            body:JSON.stringify({'productId':productId, 'action':action})
+        })
+        .then((response) => {
+            return response.json();
+        })
+        .then((data) => {
+            console.log('Dữ liệu trả về:', data)
+            // Hiển thị thông báo nhỏ gọn
+            alert("Đã thêm thành công vào giỏ hàng!");
+            // Tải lại trang để số lượng giỏ hàng được cập nhật
+            location.reload(); 
+        });
+    }
+</script>
 </body>
 </html>

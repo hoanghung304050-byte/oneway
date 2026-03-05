@@ -1,0 +1,50 @@
+{% extends 'core/home.html' %}
+
+{% block title %}Chi tiết {{ product.name }} - ONEWAY{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'home' %}">Trang chủ</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'product_list' %}">Điện thoại</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+  </ol>
+</nav>
+
+<div class="row bg-white p-4 shadow-sm rounded-3">
+    <div class="col-md-5 text-center mb-4">
+        {% if product.image_url %}
+        <img src="{{ product.image_url }}" class="img-fluid rounded" alt="{{ product.name }}">
+        {% else %}
+        <img src="https://via.placeholder.com/500" class="img-fluid rounded" alt="No image">
+        {% endif %}
+    </div>
+
+    <div class="col-md-7">
+        <h2 class="fw-bold">{{ product.name }}</h2>
+        <p class="text-muted"><i class="fa-solid fa-check text-success"></i> Có sẵn tại các cửa hàng ONEWAY</p>
+        <h2 class="text-danger fw-bold my-3">{{ product.price }} ₫</h2>
+        
+        <div class="d-flex align-items-center mb-4 mt-4">
+            <label class="fw-bold me-3">Số lượng:</label>
+            <input type="number" class="form-control text-center w-25" value="1" min="1">
+        </div>
+
+        <button data-product="{{ product.id }}" data-action="add" class="btn btn-primary w-100 mt-2 update-cart">
+            <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ
+        </button>
+        <a href="{% url 'map_view' %}" class="btn btn-outline-warning btn-lg text-dark"><i class="fa-solid fa-location-dot"></i> Tìm cửa hàng gần nhất</a>
+
+        <div class="mt-5">
+            <h5 class="fw-bold border-bottom pb-2">Thông tin chi tiết</h5>
+            <div class="mt-3 lh-lg text-secondary">
+                {% if product.description %}
+                    {{ product.description|linebreaks }}
+                {% else %}
+                    <p>Đang cập nhật thông tin chi tiết cho sản phẩm này.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

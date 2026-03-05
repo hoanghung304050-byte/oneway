@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os
+GDAL_LIBRARY_PATH =r"C:\Users\admn\AppData\Local\Programs\Python\Python313\Lib\site-packages\osgeo\gdal.dll"
+os.environ["PATH"] += r";C:\Users\admn\AppData\Local\Programs\Python\Python313\Lib\site-packages\osgeo"
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -38,6 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'core',
+    'django.contrib.gis', # Thêm dòng này để dùng các hàm bản đồ
+    'leaflet', # THÊM DÒNG NÀY VÀO ĐÂY
 ]
 
 MIDDLEWARE = [
@@ -75,8 +80,13 @@ WSGI_APPLICATION = 'oneway.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        # Sử dụng engine của PostGIS thay vì PostgreSQL bình thường
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': 'oneway_db',        # Tên database ngài vừa tạo
+        'USER': 'postgres',         # User mặc định của PostgreSQL
+        'PASSWORD': '123456',          # Mật khẩu lúc ngài cài PostgreSQL (Sửa lại cho đúng)
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
@@ -116,3 +126,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+LEAFLET_CONFIG = {
+    'DEFAULT_CENTER': (10.762622, 106.660172), # Tọa độ TP.HCM
+    'DEFAULT_ZOOM': 12,
+    'MIN_ZOOM': 3,
+    'MAX_ZOOM': 18,
+}
