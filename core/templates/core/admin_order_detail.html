@@ -1,0 +1,54 @@
+{% extends 'core/home.html' %}
+{% block title %}Chi Tiết Đơn Hàng #{{ order.id }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="card shadow border-0">
+        <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0"><i class="fa-solid fa-file-invoice"></i> Chi Tiết Đơn Hàng #{{ order.id }}</h4>
+            <span class="badge bg-light text-dark fs-6">Ngày đặt: {{ order.date_ordered|date:"d/m/Y H:i" }}</span>
+        </div>
+        <div class="card-body p-4">
+            
+            <h5 class="fw-bold border-bottom pb-2 mb-3 mt-4">Danh sách sản phẩm khách đã đặt:</h5>
+            <table class="table table-bordered table-striped mt-3">
+                <thead class="table-light">
+                    <tr>
+                        <th>Hình ảnh</th>
+                        <th>Tên sản phẩm</th>
+                        <th>Đơn giá</th>
+                        <th class="text-center">Số lượng</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td style="width: 80px;">
+                            <img src="{{ item.product.image_url }}" alt="img" class="img-fluid rounded border">
+                        </td>
+                        <td class="align-middle fw-bold">{{ item.product.name }}</td>
+                        <td class="align-middle text-danger">{{ item.product.price }} ₫</td>
+                        <td class="align-middle text-center fw-bold fs-5">{{ item.quantity }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            <div class="d-flex justify-content-end mt-4">
+                <div class="bg-light p-3 rounded border w-25 text-end">
+                    <span class="text-muted d-block mb-1">Tổng cộng (Khách phải trả):</span>
+                    <span class="fw-bold fs-3 text-danger">{{ total }} ₫</span>
+                </div>
+            </div>
+
+            <hr class="mt-4">
+            <a href="{% url 'custom_admin_dashboard' %}" class="btn btn-secondary px-4">
+                <i class="fa-solid fa-arrow-left"></i> Quay lại Bảng điều khiển
+            </a>
+            <button class="btn btn-success px-4 ms-2" onclick="window.print()">
+                <i class="fa-solid fa-print"></i> In Hóa Đơn
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}

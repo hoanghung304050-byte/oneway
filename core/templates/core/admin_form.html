@@ -1,0 +1,25 @@
+{% extends 'core/home.html' %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">{{ title }}</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">💾 Lưu Dữ Liệu</button>
+                            <a href="{% url 'custom_admin_dashboard' %}" class="btn btn-secondary">Hủy bỏ</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

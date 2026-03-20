@@ -1,0 +1,95 @@
+{% extends 'core/home.html' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+    #map { height: 400px; width: 100%; border-radius: 8px; border: 2px solid #ddd; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="card shadow">
+        <div class="card-header bg-success text-white">
+            <h4 class="mb-0">📍 {{ title }}</h4>
+        </div>
+        <div class="card-body p-4">
+            <form method="POST" action="">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-5">
+                        <h5 class="fw-bold mb-3">1. Thông tin cơ bản</h5>
+                        <div class="mb-3"><label class="fw-bold">Tên cửa hàng</label>{{ form.name }}</div>
+                        <div class="mb-3"><label class="fw-bold">Số điện thoại</label>{{ form.phone }}</div>
+                        <div class="mb-3">
+                            <label class="fw-bold">Địa chỉ</label>
+                            {{ form.address }}
+                            <button type="button" id="btn-geocode" class="btn btn-sm btn-primary mt-2 w-100">
+                                <i class="fa-solid fa-magnifying-glass-location"></i> Lấy tọa độ từ Địa chỉ trên
+                            </button>
+                        </div>
+                        {{ form.location }}
+                        
+                        <hr>
+                        <button type="submit" class="btn btn-success w-100 fw-bold btn-lg mt-3">💾 LƯU CỬA HÀNG</button>
+                        <a href="{% url 'custom_admin_dashboard' %}" class="btn btn-outline-secondary w-100 mt-2">Hủy bỏ</a>
+                    </div>
+
+                    <div class="col-md-7">
+                        <h5 class="fw-bold mb-3">2. Bản đồ định vị</h5>
+                        <p class="text-muted small">Nhấn "Lấy tọa độ" ở bên trái, hoặc click trực tiếp lên bản đồ để cắm cờ.</p>
+                        <div id="map"></div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    // 1. Khởi tạo bản đồ mặc định
+    var map = L.map('map').setView([10.762622, 106.660172], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    var marker = null;
+
+    // Lấy ô ẩn của Django để nhét dữ liệu vào
+    var locationInput = document.getElementById('store_location');
+
+    // Hàm cập nhật dữ liệu tọa độ theo chuẩn WKT (Điểm không gian của PostGIS)
+    function updateLocationInput(lat, lng) {
+        locationInput.value = "POINT(" + lng + " " + lat + ")";
+        if (marker) map.removeLayer(marker);
+        marker = L.marker([lat, lng]).addTo(map);
+    }
+
+    // 2. Chức năng tự động (Geocoding)
+    document.getElementById('btn-geocode').addEventListener('click', function() {
+        var address = document.getElementById('store_address').value;
+        if (!address) { alert("Vui lòng nhập địa chỉ trước!"); return; }
+        
+        this.innerHTML = "Đang tìm...";
+        var url = 'https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(address + ", Vietnam");
+
+        fetch(url).then(res => res.json()).then(data => {
+            document.getElementById('btn-geocode').innerHTML = "Lấy tọa độ từ Địa chỉ trên";
+            if (data.length > 0) {
+                var lat = data[0].lat, lng = data[0].lon;
+                map.flyTo([lat, lng], 17);
+                updateLocationInput(lat, lng);
+            } else {
+                alert("Không tìm thấy! Vui lòng tự click chọn trên bản đồ.");
+            }
+        });
+    });
+
+    // 3. Chức năng thủ công (Click lên bản đồ)
+    map.on('click', function(e) {
+        updateLocationInput(e.latlng.lat, e.latlng.lng);
+    });
+</script>
+{% endblock %}

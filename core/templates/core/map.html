@@ -38,11 +38,13 @@
 <script>
     // 1. KHỞI TẠO BẢN ĐỒ
     // Set tọa độ mặc định và mức độ zoom là 13
-    var map = L.map('map').setView([10.762622, 106.660172], 13);
+var map = L.map('map').setView([10.762622, 106.660172], 13);
 
-    // Sử dụng tile layer của OpenStreetMap
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
+    // Sử dụng tile layer của CartoDB (kiểu Voyager: nền sáng, rõ đường, thân thiện với localhost)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 20
     }).addTo(map);
 
     // 2. NHẬN DỮ LIỆU THẬT TỪ POSTGRESQL & POSTGIS

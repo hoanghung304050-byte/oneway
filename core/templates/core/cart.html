@@ -78,7 +78,7 @@
                     <span class="fs-5 fw-bold">Tổng cộng:</span> 
                     <strong class="text-danger fs-4">{{ order.get_cart_total|default:"0" }} ₫</strong>
                 </div>
-                <button class="btn btn-warning w-100 fw-bold fs-5 text-dark rounded-pill">Tiến Hành Đặt Hàng</button>
+                    <a href="{% url 'checkout' %}" class="btn btn-success w-100 fw-bold">Tiến hành thanh toán</a>
             </div>
         </div>
     </div>

@@ -47,4 +47,63 @@
         </div>
     </div>
 </div>
+<hr class="my-5">
+    <div class="row mb-5">
+        
+        <div class="col-md-7">
+            <h4 class="fw-bold mb-4"><i class="fa-solid fa-comments"></i> Đánh giá từ khách hàng</h4>
+            
+            {% for review in reviews %}
+                <div class="card mb-3 border-0 shadow-sm bg-light">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="fw-bold mb-0 text-primary">👤 {{ review.user.username }}</h6>
+                            <small class="text-muted">{{ review.created_at|date:"d/m/Y H:i" }}</small>
+                        </div>
+                        <div class="text-warning mb-2 fs-6">
+                            ⭐ {{ review.rating }} / 5 Sao
+                        </div>
+                        <p class="mb-0 text-dark">{{ review.comment }}</p>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="alert alert-secondary text-center border-0">
+                    Chưa có đánh giá nào. Hãy là người đầu tiên bóc tem sản phẩm này!
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="col-md-5">
+            <h4 class="fw-bold mb-4"><i class="fa-solid fa-pen-to-square"></i> Viết đánh giá của ngài</h4>
+            
+            {% if request.user.is_authenticated %}
+                <form method="POST" action="" class="card p-4 shadow-sm border-0">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="fw-bold mb-2">Chấm điểm</label>
+                        <select name="rating" class="form-select border-warning" required>
+                            <option value="5">⭐⭐⭐⭐⭐ (5 Sao - Quá đỉnh)</option>
+                            <option value="4">⭐⭐⭐⭐ (4 Sao - Rất tốt)</option>
+                            <option value="3">⭐⭐⭐ (3 Sao - Tạm được)</option>
+                            <option value="2">⭐⭐ (2 Sao - Hơi thất vọng)</option>
+                            <option value="1">⭐ (1 Sao - Quá tệ)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="fw-bold mb-2">Trải nghiệm của ngài</label>
+                        <textarea name="comment" class="form-control" rows="4" placeholder="Sản phẩm dùng mượt không ngài?..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-warning fw-bold w-100 shadow-sm">
+                        <i class="fa-solid fa-paper-plane"></i> Gửi Đánh Giá
+                    </button>
+                </form>
+            {% else %}
+                <div class="alert alert-warning shadow-sm border-0 text-center p-4">
+                    <i class="fa-solid fa-lock fs-1 text-muted mb-3"></i><br>
+                    Ngài cần <a href="{% url 'login' %}" class="fw-bold text-danger text-decoration-none">Đăng nhập</a> để được tham gia bình luận chém gió!
+                </div>
+            {% endif %}
+        </div>
+        
+    </div>
 {% endblock %}

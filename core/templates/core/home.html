@@ -40,27 +40,55 @@
                 </form>
 
                 <ul class="navbar-nav ms-auto align-items-center">
-                    <li class="nav-item">
-                        <a class="nav-link fw-semibold" href="{% url 'product_list' %}"><i class="fa-solid fa-fire"></i> Khuyến Mãi</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link fw-semibold text-warning" href="{% url 'map_view' %}"><i class="fa-solid fa-map-location-dot"></i> Hệ Thống Cửa Hàng</a>
-                    </li>
-                    <li class="nav-item ms-3">
-                        <a class="btn btn-light position-relative"  href="{% url 'cart_view' %}">
-                            <i class="fa-solid fa-cart-shopping"></i> Giỏ Hàng
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">2</span>
+                    <li class="nav-item me-3">
+                        <a class="nav-link" href="{% url 'cart' %}">
+                            <i class="fa-solid fa-cart-shopping fs-5"></i> Giỏ Hàng
                         </a>
                     </li>
-                    <li class="nav-item ms-3">
-                        <a class="btn btn-outline-light" href="{% url 'admin:index' %}"><i class="fa-solid fa-user-tie"></i> Quản trị viên</a>
-                    </li>
+
+                    {% if request.user.is_authenticated %}
+                        
+                        <li class="nav-item me-2">
+                            <span class="nav-link fw-bold text-success">👤 Chào, {{ request.user.username }}!</span>
+                        </li>
+                        
+                        {% if request.user.is_staff %}
+                        <li class="nav-item me-2">
+                            <a class="btn btn-warning btn-sm fw-bold" href="{% url 'custom_admin_dashboard' %}">
+                                <i class="fa-solid fa-gear"></i> Quản Trị
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        <li class="nav-item">
+                            <a class="btn btn-outline-danger btn-sm" href="{% url 'logout' %}">Đăng xuất</a>
+                        </li>
+
+                    {% else %}
+                        <li class="nav-item me-2">
+                            <a class="btn btn-outline-primary btn-sm" href="{% url 'login' %}">Đăng nhập</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-primary btn-sm" href="{% url 'register' %}">Đăng ký</a>
+                        </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
     </nav>
 
     <div class="container mt-4">
+    
+    {% if messages %}
+        <div class="container mt-3 position-relative" style="z-index: 9999;">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm border-0" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
         {% block content %}
         
         <div class="hero-banner text-center shadow">

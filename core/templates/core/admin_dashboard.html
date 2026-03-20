@@ -1,0 +1,148 @@
+{% extends 'core/home.html' %}
+{% block content %}
+<div class="container mt-5 mb-5">
+    <h2 class="fw-bold mb-4 text-primary">⚙️ Bảng Điều Khiển Quản Trị Viên</h2>
+    
+    <div class="card shadow-sm border-0 mb-5 mt-4">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fa-solid fa-chart-line"></i> Báo Cáo Doanh Thu & Bán Hàng</h5>
+            
+            <ul class="nav nav-pills card-header-pills" id="statsTabs" role="tablist">
+                <li class="nav-item"><button class="nav-link active bg-primary text-white" data-bs-toggle="tab" data-bs-target="#tab-day" type="button">Hôm nay</button></li>
+                <li class="nav-item ms-1"><button class="nav-link text-white" data-bs-toggle="tab" data-bs-target="#tab-week" type="button">7 Ngày</button></li>
+                <li class="nav-item ms-1"><button class="nav-link text-white" data-bs-toggle="tab" data-bs-target="#tab-month" type="button">30 Ngày</button></li>
+                <li class="nav-item ms-1"><button class="nav-link text-white" data-bs-toggle="tab" data-bs-target="#tab-year" type="button">1 Năm</button></li>
+            </ul>
+        </div>
+        
+        <div class="card-body bg-light">
+            <div class="tab-content">
+                
+                <div class="tab-pane fade show active" id="tab-day">
+                    <div class="row text-center">
+                        <div class="col-md-4"><div class="card border-primary shadow-sm h-100"><div class="card-body"><h6 class="text-muted text-uppercase fw-bold">Tổng Khách Đặt Mua</h6><h2 class="text-primary fw-bold">{{ stats.day.order_count }} <span class="fs-6 text-muted">đơn</span></h2></div></div></div>
+                        <div class="col-md-4"><div class="card border-success shadow-sm h-100"><div class="card-body"><h6 class="text-muted text-uppercase fw-bold">Tổng Thu Nhập</h6><h2 class="text-success fw-bold">{{ stats.day.revenue }} <span class="fs-6 text-muted">₫</span></h2></div></div></div>
+                        <div class="col-md-4"><div class="card border-warning shadow-sm h-100"><div class="card-body"><h6 class="text-muted text-uppercase fw-bold">Bán Chạy Nhất</h6><h4 class="text-dark fw-bold mb-1">{{ stats.day.top_name }}</h4>{% if stats.day.top_qty > 0 %}<span class="badge bg-warning text-dark fs-6">Đã bán: {{ stats.day.top_qty }} chiếc</span>{% endif %}</div></div></div>
+                    </div>
+                </div>
+                
+                <div class="tab-pane fade" id="tab-week">
+                    <div class="row text-center">
+                        <div class="col-md-4"><div class="card border-primary shadow-sm h-100"><div class="card-body"><h6 class="text-muted text-uppercase fw-bold">Tổng Khách Đặt Mua</h6><h2 class="text-primary fw-bold">{{ stats.week.order_count }} <span class="fs-6 text-muted">đơn</span></h2></div></div></div>
+                        <div class="col-md-4"><div class="card border-success shadow-sm h-100"><div class="card-body"><h6 class="text-muted text-uppercase fw-bold">Tổng Thu Nhập</h6><h2 class="text-success fw-bold">{{ stats.week.revenue }} <span class="fs-6 text-muted">₫</span></h2></div></div></div>
+                        <div class="col-md-4"><div class="card border-warning shadow-sm h-100"><div class="card-body"><h6 class="text-muted text-uppercase fw-bold">Bán Chạy Nhất</h6><h4 class="text-dark fw-bold mb-1">{{ stats.week.top_name }}</h4>{% if stats.week.top_qty > 0 %}<span class="badge bg-warning text-dark fs-6">Đã bán: {{ stats.week.top_qty }} chiếc</span>{% endif %}</div></div></div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="tab-month">
+                    <div class="row text-center">
+                        <div class="col-md-4"><div class="card border-primary shadow-sm h-100"><div class="card-body"><h6 class="text-muted text-uppercase fw-bold">Tổng Khách Đặt Mua</h6><h2 class="text-primary fw-bold">{{ stats.month.order_count }} <span class="fs-6 text-muted">đơn</span></h2></div></div></div>
+                        <div class="col-md-4"><div class="card border-success shadow-sm h-100"><div class="card-body"><h6 class="text-muted text-uppercase fw-bold">Tổng Thu Nhập</h6><h2 class="text-success fw-bold">{{ stats.month.revenue }} <span class="fs-6 text-muted">₫</span></h2></div></div></div>
+                        <div class="col-md-4"><div class="card border-warning shadow-sm h-100"><div class="card-body"><h6 class="text-muted text-uppercase fw-bold">Bán Chạy Nhất</h6><h4 class="text-dark fw-bold mb-1">{{ stats.month.top_name }}</h4>{% if stats.month.top_qty > 0 %}<span class="badge bg-warning text-dark fs-6">Đã bán: {{ stats.month.top_qty }} chiếc</span>{% endif %}</div></div></div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="tab-year">
+                    <div class="row text-center">
+                        <div class="col-md-4"><div class="card border-primary shadow-sm h-100"><div class="card-body"><h6 class="text-muted text-uppercase fw-bold">Tổng Khách Đặt Mua</h6><h2 class="text-primary fw-bold">{{ stats.year.order_count }} <span class="fs-6 text-muted">đơn</span></h2></div></div></div>
+                        <div class="col-md-4"><div class="card border-success shadow-sm h-100"><div class="card-body"><h6 class="text-muted text-uppercase fw-bold">Tổng Thu Nhập</h6><h2 class="text-success fw-bold">{{ stats.year.revenue }} <span class="fs-6 text-muted">₫</span></h2></div></div></div>
+                        <div class="col-md-4"><div class="card border-warning shadow-sm h-100"><div class="card-body"><h6 class="text-muted text-uppercase fw-bold">Bán Chạy Nhất</h6><h4 class="text-dark fw-bold mb-1">{{ stats.year.top_name }}</h4>{% if stats.year.top_qty > 0 %}<span class="badge bg-warning text-dark fs-6">Đã bán: {{ stats.year.top_qty }} chiếc</span>{% endif %}</div></div></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    
+    <div class="d-flex justify-content-between mb-3">
+        <h4>Quản lý Sản Phẩm</h4>
+        <a href="{% url 'admin_add_product' %}" class="btn btn-success">+ Thêm Sản Phẩm</a>
+    </div>
+
+    <table class="table table-bordered table-hover bg-white shadow-sm">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th><th>Hình ảnh</th><th>Tên sản phẩm</th><th>Giá</th><th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td>{{ product.id }}</td>
+                <td><img src="{{ product.image_url }}" width="50" alt="img"></td>
+                <td>{{ product.name }}</td>
+                <td>{{ product.price }} ₫</td>
+                <td>
+                    <a href="{% url 'admin_edit_product' product.id %}" class="btn btn-sm btn-warning">Sửa</a>
+                    <a href="{% url 'admin_delete_product' product.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Ngài có chắc chắn muốn xóa?');">Xóa</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <hr class="my-5">
+
+    <div class="d-flex justify-content-between mb-3 mt-4">
+        <h4>Quản lý Cửa Hàng (GIS)</h4>
+        <a href="{% url 'admin_add_store' %}" class="btn btn-success">+ Thêm Cửa Hàng</a>
+    </div>
+
+    <table class="table table-bordered table-hover bg-white shadow-sm">
+        <thead class="table-dark">
+            <tr><th>ID</th><th>Tên cửa hàng</th><th>Địa chỉ</th><th>SĐT</th><th>Hành động</th></tr>
+        </thead>
+        <tbody>
+            {% for store in stores %}
+            <tr>
+                <td>{{ store.id }}</td><td>{{ store.name }}</td><td>{{ store.address }}</td><td>{{ store.phone }}</td>
+                <td>
+                    <a href="{% url 'admin_edit_store' store.id %}" class="btn btn-sm btn-warning">Sửa</a>
+                    <a href="{% url 'admin_delete_store' store.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Xóa cửa hàng này?');">Xóa</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <hr class="my-5">
+    
+    <div class="d-flex justify-content-between mb-3 mt-4">
+        <h4>📦 Quản lý Đơn Hàng</h4>
+    </div>
+
+    <table class="table table-bordered table-hover bg-white shadow-sm">
+        <thead class="table-dark">
+            <tr>
+                <th>Mã Đơn</th>
+                <th>Ngày đặt</th>
+                <th>Mã giao dịch</th>
+                <th>Trạng thái</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td class="fw-bold text-primary">#{{ order.id }}</td>
+                <td>{{ order.date_ordered|date:"d/m/Y H:i" }}</td>
+                <td>{{ order.transaction_id|default:"Đang xử lý" }}</td>
+                <td><span class="badge bg-success">Đã chốt đơn</span></td>
+                <td>
+                    <a href="{% url 'admin_order_detail' order.id %}" class="btn btn-sm btn-info text-white">
+                        <i class="fa-solid fa-eye"></i> Xem chi tiết
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="text-center text-muted py-4">
+                    <i class="fa-solid fa-box-open fs-2 mb-2"></i><br>
+                    Chưa có khách hàng nào đặt đơn.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

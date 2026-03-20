@@ -1,4 +1,5 @@
 from django.contrib.gis.db import models
+from django.contrib.auth.models import User
 
 class Product(models.Model):
     name = models.CharField(max_length=255, verbose_name="Tên sản phẩm")
@@ -46,3 +47,14 @@ class OrderItem(models.Model):
     def get_total(self):
         total = self.product.price * self.quantity
         return total
+class Review(models.Model):
+    # Tất cả các dòng dưới đây đều phải thụt vào 1 Tab nhé!
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    rating = models.IntegerField(default=5)
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        # Dòng return này lại nằm trong hàm def, nên phải thụt thêm 1 Tab nữa
+        return f"{self.user.username} đánh giá {self.product.name} ({self.rating} Sao)"
