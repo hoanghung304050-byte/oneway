@@ -1,7 +1,9 @@
+
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
 from django.http import JsonResponse
+from django.urls import reverse
 from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
@@ -25,13 +27,31 @@ def contact(request):
     return render(request, 'core/contact.html')
 
 def home_view(request):
-    products = Product.objects.all()[:4]
+    products = Product.objects.all()
     return render(request, 'core/home.html', {'products': products})
 
-# === 2. SẢN PHẨM & BẢN ĐỒ ===
 def product_list(request):
+    # 1. Lấy danh sách các thương hiệu khách đã tích (trả về một list ['iphone', 'samsung',...])
+    selected_brands = request.GET.getlist('brands')
+    
+    # 2. Bắt đầu với tất cả sản phẩm
     products = Product.objects.all()
-    return render(request, 'core/product_list.html', {'products': products})
+
+    # 3. Nếu khách có tích vào ít nhất 1 ô, tiến hành lọc "tất cả trong một"
+    if selected_brands:
+        # Lọc những sản phẩm có tên chứa bất kỳ thương hiệu nào trong danh sách
+        # Chúng ta dùng Q object để tạo truy vấn "OR" phức tạp hơn một chút
+        from django.db.models import Q
+        query = Q()
+        for brand in selected_brands:
+            query |= Q(name__icontains=brand) # |= tương đương với phép OR
+        products = products.filter(query)
+
+    context = {
+        'products': products,
+        'selected_brands': selected_brands, # Gửi ngược lại để giữ trạng thái đã tích
+    }
+    return render(request, 'core/product_list.html', context)
 
 def product_detail(request, pk):
     product = get_object_or_404(Product, id=pk)
@@ -249,3 +269,22 @@ def admin_delete_store(request, pk):
     store = get_object_or_404(Store, id=pk)
     store.delete()
     return redirect('custom_admin_dashboard')
+# === API TÌM KIẾM TRỰC TIẾP (LIVE SEARCH) ===
+def search_products(request):
+    query = request.GET.get('q', '').strip()
+    results = []
+    
+    if query:
+        # Lấy tối đa 5 sản phẩm có tên chứa từ khóa (không phân biệt hoa/thường)
+        products = Product.objects.filter(name__icontains=query)[:5]
+        
+        for p in products:
+            results.append({
+                'id': p.id,
+                'name': p.name,
+                'price': f"{p.price:,.0f}", # Định dạng lại giá tiền cho đẹp
+                'image_url': p.image_url,
+                'url': reverse('product_detail', args=[p.id]) # Tự động tạo link chi tiết
+            })
+            
+    return JsonResponse({'data': results})

@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'core',
     'django.contrib.gis', # Thêm dòng này để dùng các hàm bản đồ
     'leaflet', # THÊM DÒNG NÀY VÀO ĐÂY
@@ -136,3 +137,5 @@ LEAFLET_CONFIG = {
     'MIN_ZOOM': 3,
     'MAX_ZOOM': 18,
 }
+USE_THOUSAND_SEPARATOR = True
+THOUSAND_SEPARATOR = '.'

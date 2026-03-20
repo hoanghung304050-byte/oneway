@@ -23,4 +23,5 @@ urlpatterns = [
     path('dang-ky/', views.register_page, name='register'),
     path('dang-nhap/', views.login_page, name='login'),
     path('dang-xuat/', views.logout_user, name='logout'),
+    path('api/search/', views.search_products, name='search_products'),
 ]

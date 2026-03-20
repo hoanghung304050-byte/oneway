@@ -1,58 +1,85 @@
 {% extends 'core/home.html' %}
 
-{% block title %}Điện thoại chính hãng - ONEWAY{% endblock %}
-
 {% block content %}
-<div class="row">
-    <div class="col-md-3 mb-4">
-        <div class="card shadow-sm">
-            <div class="card-header bg-dark text-white fw-bold">
-                <i class="fa-solid fa-filter"></i> Bộ Lọc
-            </div>
-            <ul class="list-group list-group-flush">
-                <li class="list-group-item"><input type="checkbox" class="form-check-input me-2"> Apple (iPhone)</li>
-                <li class="list-group-item"><input type="checkbox" class="form-check-input me-2"> Samsung</li>
-                <li class="list-group-item"><input type="checkbox" class="form-check-input me-2"> Xiaomi</li>
-                <li class="list-group-item"><input type="checkbox" class="form-check-input me-2"> Oppo</li>
-            </ul>
-        </div>
-    </div>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <div class="card shadow-sm border-0 rounded-4 sticky-top" style="top: 90px;">
+                <div class="card-header bg-dark text-white rounded-top-4">
+                    <h5 class="mb-0 py-1"><i class="fa-solid fa-filter me-2"></i>Bộ Lọc Sản Phẩm</h5>
+                </div>
+                <div class="card-body">
+                    <form method="GET" action="{% url 'product_list' %}">
+                        <h6 class="fw-bold mb-3">Thương Hiệu</h6>
+                        
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="brands" value="iphone" id="brand-iphone" 
+                                {% if 'iphone' in selected_brands %}checked{% endif %}>
+                            <label class="form-check-label" for="brand-iphone">Apple (iPhone)</label>
+                        </div>
 
-   <div class="col-md-9">
-        <h3 class="fw-bold text-uppercase mb-4">Sản Phẩm Khuyến Mãi</h3>
-        <div class="row">
-            
-            {% for product in products %}
-            <div class="col-md-4 col-sm-6 mb-4">
-                <div class="card product-card h-100 shadow-sm">
-                    
-                    {% if product.image_url %}
-                    <img src="{{ product.image_url }}" class="card-img-top product-img" alt="{{ product.name }}">
-                    {% else %}
-                    <img src="https://via.placeholder.com/250" class="card-img-top product-img" alt="No image">
-                    {% endif %}
-                    
-                    <div class="card-body d-flex flex-column text-center">
-                        <a href="{% url 'product_detail' product.id %}" class="text-decoration-none text-dark">
-                            <h5 class="card-title fs-6 fw-bold">{{ product.name }}</h5>
-                        </a>
-                        
-                        <p class="price-text mt-auto mb-2">{{ product.price }} ₫</p>
-                        
-                        <button data-product="{{ product.id }}" data-action="add" class="btn btn-primary w-100 mt-2 update-cart">
-                            <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="brands" value="samsung" id="brand-samsung"
+                                {% if 'samsung' in selected_brands %}checked{% endif %}>
+                            <label class="form-check-label" for="brand-samsung">Samsung</label>
+                        </div>
+
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="brands" value="xiaomi" id="brand-xiaomi"
+                                {% if 'xiaomi' in selected_brands %}checked{% endif %}>
+                            <label class="form-check-label" for="brand-xiaomi">Xiaomi</label>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" name="brands" value="phu-kien" id="brand-pk"
+                                {% if 'phu-kien' in selected_brands %}checked{% endif %}>
+                            <label class="form-check-label" for="brand-pk">Phụ Kiện</label>
+                        </div>
+
+                        <hr>
+                        <button type="submit" class="btn btn-primary w-100 fw-bold shadow-sm">
+                            <i class="fa-solid fa-magnifying-glass"></i> ÁP DỤNG LỌC
                         </button>
-                    </div>
+                        
+                        <a href="{% url 'product_list' %}" class="btn btn-outline-secondary w-100 mt-2 btn-sm border-0">
+                            Xóa tất cả bộ lọc
+                        </a>
+                    </form>
                 </div>
             </div>
+        </div>
+
+        <div class="col-md-9">
+            <h3 class="mb-4 fw-bold">
+                {% if selected_brands %}
+                    Kết quả lọc cho: <span class="text-primary">{{ selected_brands|join:", " }}</span>
+                {% else %}
+                    Tất cả sản phẩm
+                {% endif %}
+            </h3>
             
-            {% empty %}
-            <div class="col-12 text-center text-muted my-5">
-                <i class="fa-solid fa-box-open fs-1 mb-3"></i>
-                <p>Hiện tại chưa có chương trình khuyến mãi nào.</p>
+            <div class="row">
+                {% for product in products %}
+                <div class="col-md-4 col-sm-6 mb-4">
+                    <div class="card product-card h-100 shadow-sm border-0 rounded-4 overflow-hidden">
+                        <img src="{{ product.image_url }}" class="card-img-top product-img p-3" alt="{{ product.name }}" style="height: 200px; object-fit: contain;">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title fs-6 fw-bold">{{ product.name }}</h5>
+                            <p class="price-text text-danger fw-bold mt-auto mb-2">{{ product.price }} ₫</p>
+                            <button data-product="{{ product.id }}" data-action="add" class="btn btn-outline-primary w-100 mt-2 update-cart rounded-pill">
+                                <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center py-5">
+                    <i class="fa-solid fa-face-frown fs-1 text-muted mb-3"></i>
+                    <p class="fs-5 text-muted">Rất tiếc, không có sản phẩm nào khớp với bộ lọc của ngài.</p>
+                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
-            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

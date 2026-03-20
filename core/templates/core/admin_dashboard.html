@@ -1,148 +1,244 @@
 {% extends 'core/home.html' %}
+{% load humanize %}
+
+{% block extra_css %}
+<style>
+    /* 1. ĐỊNH NGHĨA KHÔNG GIAN */
+    :root {
+        --sidebar-width: 250px;
+        --accent-color: #0d6efd;
+        --bg-admin: #f4f7fa;
+    }
+
+    /* Ẩn Navbar và Footer trang chủ để làm Dashboard chuyên nghiệp */
+    nav.navbar, footer { display: none !important; }
+
+    body { background-color: var(--bg-admin); }
+
+    .admin-container { display: flex; min-height: 100vh; }
+
+    /* 2. SIDEBAR CỐ ĐỊNH */
+    .sidebar {
+        width: var(--sidebar-width);
+        background: white;
+        border-right: 1px solid #e3e6f0;
+        position: fixed;
+        height: 100vh;
+        z-index: 1000;
+        padding-top: 20px;
+    }
+
+    .sidebar-brand { padding: 0 25px 20px; border-bottom: 1px solid #f8f9fa; margin-bottom: 10px; }
+
+    .sidebar .nav-link {
+        padding: 12px 25px;
+        color: #6e707e;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        transition: all 0.2s;
+    }
+
+    .sidebar .nav-link i { width: 25px; margin-right: 10px; font-size: 1.1rem; }
+    .sidebar .nav-link:hover { background: #f8f9fc; color: var(--accent-color); }
+    .sidebar .nav-link.active { background: #eaecf4; color: var(--accent-color); border-right: 4px solid var(--accent-color); }
+
+    /* 3. NỘI DUNG CHÍNH */
+    .main-content {
+        flex: 1;
+        margin-left: var(--sidebar-width);
+        padding: 30px;
+    }
+
+    /* 4. CÁC KHỐI CARD THỐNG KÊ */
+    .stat-card {
+        border: none;
+        border-radius: 15px;
+        background: white;
+        padding: 20px;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.05);
+        height: 100%;
+        border-left: 5px solid var(--accent-color);
+    }
+
+    /* 5. KHUNG BẢNG CÓ THANH CUỘN (STICKY HEADER) */
+    .table-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.05);
+        margin-bottom: 30px;
+    }
+
+    .scroll-area {
+        max-height: 400px;
+        overflow-y: auto;
+        border: 1px solid #f1f1f1;
+        border-radius: 10px;
+    }
+
+    .table thead th {
+        position: sticky;
+        top: 0;
+        background: #212529 !important;
+        color: white;
+        z-index: 10;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+    }
+
+    /* Tùy chỉnh thanh cuộn */
+    .scroll-area::-webkit-scrollbar { width: 6px; }
+    .scroll-area::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+
+    .btn-circle { width: 35px; height: 35px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container mt-5 mb-5">
-    <h2 class="fw-bold mb-4 text-primary">⚙️ Bảng Điều Khiển Quản Trị Viên</h2>
-    
-    <div class="card shadow-sm border-0 mb-5 mt-4">
-        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-            <h5 class="mb-0"><i class="fa-solid fa-chart-line"></i> Báo Cáo Doanh Thu & Bán Hàng</h5>
-            
-            <ul class="nav nav-pills card-header-pills" id="statsTabs" role="tablist">
-                <li class="nav-item"><button class="nav-link active bg-primary text-white" data-bs-toggle="tab" data-bs-target="#tab-day" type="button">Hôm nay</button></li>
-                <li class="nav-item ms-1"><button class="nav-link text-white" data-bs-toggle="tab" data-bs-target="#tab-week" type="button">7 Ngày</button></li>
-                <li class="nav-item ms-1"><button class="nav-link text-white" data-bs-toggle="tab" data-bs-target="#tab-month" type="button">30 Ngày</button></li>
-                <li class="nav-item ms-1"><button class="nav-link text-white" data-bs-toggle="tab" data-bs-target="#tab-year" type="button">1 Năm</button></li>
-            </ul>
+<div class="admin-container">
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <h5 class="fw-bold text-primary mb-0"><i class="fa-solid fa-shield-halved"></i> ONEWAY ADMIN</h5>
         </div>
-        
-        <div class="card-body bg-light">
+        <nav class="nav flex-column">
+            <a class="nav-link active" href="#"><i class="fa-solid fa-chart-line"></i> Thống kê</a>
+            <a class="nav-link" href="#section-products"><i class="fa-solid fa-mobile-screen"></i> Sản phẩm</a>
+            <a class="nav-link" href="#section-stores"><i class="fa-solid fa-map-location-dot"></i> Cửa hàng (GIS)</a>
+            <a class="nav-link" href="#section-orders"><i class="fa-solid fa-cart-shopping"></i> Đơn hàng</a>
+            <hr class="mx-3 my-2">
+            <a class="nav-link text-danger" href="{% url 'home' %}"><i class="fa-solid fa-arrow-left"></i> Quay lại Web</a>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="fw-bold text-gray-800">Bảng Điều Khiển Quản Trị</h3>
+            <span class="badge bg-white text-dark shadow-sm p-2 rounded-pill px-3 border">
+                <i class="fa-regular fa-calendar-days me-2"></i> {% now "d/m/Y" %}
+            </span>
+        </div>
+
+        <div class="table-card mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0">Báo cáo doanh số</h5>
+                <ul class="nav nav-pills nav-pills-sm" id="pills-tab" role="tablist">
+                    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-day">Hôm nay</button></li>
+                    <li class="nav-item ms-1"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-week">7 Ngày</button></li>
+                </ul>
+            </div>
+            
             <div class="tab-content">
-                
                 <div class="tab-pane fade show active" id="tab-day">
-                    <div class="row text-center">
-                        <div class="col-md-4"><div class="card border-primary shadow-sm h-100"><div class="card-body"><h6 class="text-muted text-uppercase fw-bold">Tổng Khách Đặt Mua</h6><h2 class="text-primary fw-bold">{{ stats.day.order_count }} <span class="fs-6 text-muted">đơn</span></h2></div></div></div>
-                        <div class="col-md-4"><div class="card border-success shadow-sm h-100"><div class="card-body"><h6 class="text-muted text-uppercase fw-bold">Tổng Thu Nhập</h6><h2 class="text-success fw-bold">{{ stats.day.revenue }} <span class="fs-6 text-muted">₫</span></h2></div></div></div>
-                        <div class="col-md-4"><div class="card border-warning shadow-sm h-100"><div class="card-body"><h6 class="text-muted text-uppercase fw-bold">Bán Chạy Nhất</h6><h4 class="text-dark fw-bold mb-1">{{ stats.day.top_name }}</h4>{% if stats.day.top_qty > 0 %}<span class="badge bg-warning text-dark fs-6">Đã bán: {{ stats.day.top_qty }} chiếc</span>{% endif %}</div></div></div>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="stat-card" style="border-left-color: #4e73df;">
+                                <small class="text-uppercase fw-bold text-primary">Đơn hàng mới</small>
+                                <h2 class="fw-bold mb-0 mt-1">{{ stats.day.order_count }}</h2>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-card" style="border-left-color: #1cc88a;">
+                                <small class="text-uppercase fw-bold text-success">Doanh thu ngày</small>
+                                <h2 class="fw-bold mb-0 mt-1">{{ stats.day.revenue|intcomma }} ₫</h2>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-card" style="border-left-color: #f6c23e;">
+                                <small class="text-uppercase fw-bold text-warning">Bán chạy</small>
+                                <div class="fw-bold text-truncate mt-1">{{ stats.day.top_name|default:"--" }}</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                
                 <div class="tab-pane fade" id="tab-week">
-                    <div class="row text-center">
-                        <div class="col-md-4"><div class="card border-primary shadow-sm h-100"><div class="card-body"><h6 class="text-muted text-uppercase fw-bold">Tổng Khách Đặt Mua</h6><h2 class="text-primary fw-bold">{{ stats.week.order_count }} <span class="fs-6 text-muted">đơn</span></h2></div></div></div>
-                        <div class="col-md-4"><div class="card border-success shadow-sm h-100"><div class="card-body"><h6 class="text-muted text-uppercase fw-bold">Tổng Thu Nhập</h6><h2 class="text-success fw-bold">{{ stats.week.revenue }} <span class="fs-6 text-muted">₫</span></h2></div></div></div>
-                        <div class="col-md-4"><div class="card border-warning shadow-sm h-100"><div class="card-body"><h6 class="text-muted text-uppercase fw-bold">Bán Chạy Nhất</h6><h4 class="text-dark fw-bold mb-1">{{ stats.week.top_name }}</h4>{% if stats.week.top_qty > 0 %}<span class="badge bg-warning text-dark fs-6">Đã bán: {{ stats.week.top_qty }} chiếc</span>{% endif %}</div></div></div>
+                    <div class="row g-3">
+                        <div class="col-md-4"><div class="stat-card">... {{ stats.week.order_count }} đơn</div></div>
+                        <div class="col-md-4"><div class="stat-card">... {{ stats.week.revenue|intcomma }} ₫</div></div>
                     </div>
                 </div>
-
-                <div class="tab-pane fade" id="tab-month">
-                    <div class="row text-center">
-                        <div class="col-md-4"><div class="card border-primary shadow-sm h-100"><div class="card-body"><h6 class="text-muted text-uppercase fw-bold">Tổng Khách Đặt Mua</h6><h2 class="text-primary fw-bold">{{ stats.month.order_count }} <span class="fs-6 text-muted">đơn</span></h2></div></div></div>
-                        <div class="col-md-4"><div class="card border-success shadow-sm h-100"><div class="card-body"><h6 class="text-muted text-uppercase fw-bold">Tổng Thu Nhập</h6><h2 class="text-success fw-bold">{{ stats.month.revenue }} <span class="fs-6 text-muted">₫</span></h2></div></div></div>
-                        <div class="col-md-4"><div class="card border-warning shadow-sm h-100"><div class="card-body"><h6 class="text-muted text-uppercase fw-bold">Bán Chạy Nhất</h6><h4 class="text-dark fw-bold mb-1">{{ stats.month.top_name }}</h4>{% if stats.month.top_qty > 0 %}<span class="badge bg-warning text-dark fs-6">Đã bán: {{ stats.month.top_qty }} chiếc</span>{% endif %}</div></div></div>
-                    </div>
-                </div>
-
-                <div class="tab-pane fade" id="tab-year">
-                    <div class="row text-center">
-                        <div class="col-md-4"><div class="card border-primary shadow-sm h-100"><div class="card-body"><h6 class="text-muted text-uppercase fw-bold">Tổng Khách Đặt Mua</h6><h2 class="text-primary fw-bold">{{ stats.year.order_count }} <span class="fs-6 text-muted">đơn</span></h2></div></div></div>
-                        <div class="col-md-4"><div class="card border-success shadow-sm h-100"><div class="card-body"><h6 class="text-muted text-uppercase fw-bold">Tổng Thu Nhập</h6><h2 class="text-success fw-bold">{{ stats.year.revenue }} <span class="fs-6 text-muted">₫</span></h2></div></div></div>
-                        <div class="col-md-4"><div class="card border-warning shadow-sm h-100"><div class="card-body"><h6 class="text-muted text-uppercase fw-bold">Bán Chạy Nhất</h6><h4 class="text-dark fw-bold mb-1">{{ stats.year.top_name }}</h4>{% if stats.year.top_qty > 0 %}<span class="badge bg-warning text-dark fs-6">Đã bán: {{ stats.year.top_qty }} chiếc</span>{% endif %}</div></div></div>
-                    </div>
-                </div>
-
             </div>
         </div>
+
+        <div id="section-products" class="table-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0"><i class="fa-solid fa-mobile-screen text-primary me-2"></i>Danh sách Sản Phẩm</h5>
+                <a href="{% url 'admin_add_product' %}" class="btn btn-primary btn-sm rounded-pill px-3">+ Thêm mới</a>
+            </div>
+            <div class="scroll-area">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr><th>ID</th><th>Ảnh</th><th>Tên sản phẩm</th><th>Giá</th><th>Hành động</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for product in products %}
+                        <tr>
+                            <td>{{ product.id }}</td>
+                            <td><img src="{{ product.image_url }}" width="40" class="rounded shadow-sm"></td>
+                            <td class="fw-bold">{{ product.name }}</td>
+                            <td class="text-danger fw-bold">{{ product.price|intcomma }} ₫</td>
+                            <td>
+                                <a href="{% url 'admin_edit_product' product.id %}" class="btn btn-sm btn-outline-warning btn-circle"><i class="fa-solid fa-pen"></i></a>
+                                <a href="{% url 'admin_delete_product' product.id %}" class="btn btn-sm btn-outline-danger btn-circle" onclick="return confirm('Xóa?');"><i class="fa-solid fa-trash"></i></a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="section-stores" class="table-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0"><i class="fa-solid fa-map-location-dot text-success me-2"></i>Hệ thống Cửa Hàng (GIS)</h5>
+                <a href="{% url 'admin_add_store' %}" class="btn btn-success btn-sm rounded-pill px-3">+ Thêm Store</a>
+            </div>
+            <div class="scroll-area">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr><th>ID</th><th>Tên cửa hàng</th><th>Địa chỉ</th><th>Hành động</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for store in stores %}
+                        <tr>
+                            <td>{{ store.id }}</td>
+                            <td class="fw-bold text-success">{{ store.name }}</td>
+                            <td class="small">{{ store.address }}</td>
+                            <td>
+                                <a href="{% url 'admin_edit_store' store.id %}" class="btn btn-sm btn-outline-warning btn-circle"><i class="fa-solid fa-pen"></i></a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="section-orders" class="table-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0"><i class="fa-solid fa-box-open text-warning me-2"></i>Đơn hàng mới nhất</h5>
+            </div>
+            <div class="scroll-area">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr><th>Mã</th><th>Ngày</th><th>Giao dịch</th><th>Hành động</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                            <td class="fw-bold text-primary">#{{ order.id }}</td>
+                            <td class="small">{{ order.date_ordered|date:"d/m/Y H:i" }}</td>
+                            <td class="small text-muted">{{ order.transaction_id|default:"COD" }}</td>
+                            <td>
+                                <a href="{% url 'admin_order_detail' order.id %}" class="btn btn-info btn-sm text-white rounded-pill px-3">Chi tiết</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
-    
-    <div class="d-flex justify-content-between mb-3">
-        <h4>Quản lý Sản Phẩm</h4>
-        <a href="{% url 'admin_add_product' %}" class="btn btn-success">+ Thêm Sản Phẩm</a>
-    </div>
-
-    <table class="table table-bordered table-hover bg-white shadow-sm">
-        <thead class="table-dark">
-            <tr>
-                <th>ID</th><th>Hình ảnh</th><th>Tên sản phẩm</th><th>Giá</th><th>Hành động</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for product in products %}
-            <tr>
-                <td>{{ product.id }}</td>
-                <td><img src="{{ product.image_url }}" width="50" alt="img"></td>
-                <td>{{ product.name }}</td>
-                <td>{{ product.price }} ₫</td>
-                <td>
-                    <a href="{% url 'admin_edit_product' product.id %}" class="btn btn-sm btn-warning">Sửa</a>
-                    <a href="{% url 'admin_delete_product' product.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Ngài có chắc chắn muốn xóa?');">Xóa</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <hr class="my-5">
-
-    <div class="d-flex justify-content-between mb-3 mt-4">
-        <h4>Quản lý Cửa Hàng (GIS)</h4>
-        <a href="{% url 'admin_add_store' %}" class="btn btn-success">+ Thêm Cửa Hàng</a>
-    </div>
-
-    <table class="table table-bordered table-hover bg-white shadow-sm">
-        <thead class="table-dark">
-            <tr><th>ID</th><th>Tên cửa hàng</th><th>Địa chỉ</th><th>SĐT</th><th>Hành động</th></tr>
-        </thead>
-        <tbody>
-            {% for store in stores %}
-            <tr>
-                <td>{{ store.id }}</td><td>{{ store.name }}</td><td>{{ store.address }}</td><td>{{ store.phone }}</td>
-                <td>
-                    <a href="{% url 'admin_edit_store' store.id %}" class="btn btn-sm btn-warning">Sửa</a>
-                    <a href="{% url 'admin_delete_store' store.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Xóa cửa hàng này?');">Xóa</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <hr class="my-5">
-    
-    <div class="d-flex justify-content-between mb-3 mt-4">
-        <h4>📦 Quản lý Đơn Hàng</h4>
-    </div>
-
-    <table class="table table-bordered table-hover bg-white shadow-sm">
-        <thead class="table-dark">
-            <tr>
-                <th>Mã Đơn</th>
-                <th>Ngày đặt</th>
-                <th>Mã giao dịch</th>
-                <th>Trạng thái</th>
-                <th>Hành động</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for order in orders %}
-            <tr>
-                <td class="fw-bold text-primary">#{{ order.id }}</td>
-                <td>{{ order.date_ordered|date:"d/m/Y H:i" }}</td>
-                <td>{{ order.transaction_id|default:"Đang xử lý" }}</td>
-                <td><span class="badge bg-success">Đã chốt đơn</span></td>
-                <td>
-                    <a href="{% url 'admin_order_detail' order.id %}" class="btn btn-sm btn-info text-white">
-                        <i class="fa-solid fa-eye"></i> Xem chi tiết
-                    </a>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="5" class="text-center text-muted py-4">
-                    <i class="fa-solid fa-box-open fs-2 mb-2"></i><br>
-                    Chưa có khách hàng nào đặt đơn.
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
 </div>
 {% endblock %}

@@ -22,4 +22,18 @@
         </div>
     </div>
 </div>
+<script>
+    const priceInput = document.getElementById('price_input');
+    
+    priceInput.addEventListener('input', function (e) {
+        // Lấy giá trị đang gõ, xóa hết mọi thứ không phải số
+        let value = e.target.value.replace(/\D/g, "");
+        
+        // Định dạng lại thành 25.190.000
+        value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        
+        // Gán lại vào ô nhập
+        e.target.value = value;
+    });
+</script>
 {% endblock %}

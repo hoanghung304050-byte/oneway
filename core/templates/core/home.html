@@ -1,4 +1,7 @@
 <!DOCTYPE html>
+{% load humanize %} <p class="price-text mt-auto mb-2">
+    {{ product.price|intcomma }} 
+</p>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -34,10 +37,16 @@
             </button>
             
             <div class="collapse navbar-collapse" id="navbarNav">
-                <form class="d-flex mx-auto w-50">
-                    <input class="form-control me-2 rounded-pill" type="search" placeholder="Tìm kiếm iPhone, Samsung..." aria-label="Search">
-                    <button class="btn btn-outline-light rounded-pill px-4" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
-                </form>
+                    <form class="d-flex position-relative me-3" style="width: 350px;">
+                        <div class="input-group">
+                            <input class="form-control border-0 shadow-sm" type="text" placeholder="Gõ tên điện thoại (VD: iPhone)..." id="searchInput" autocomplete="off">
+                            <button class="btn btn-warning shadow-sm" type="button"><i class="fa-solid fa-magnifying-glass"></i></button>
+                        </div>
+
+                        <div id="searchResults" class="dropdown-menu w-100 shadow-lg border-0 mt-1 p-0 rounded-3 overflow-hidden" style="display: none; position: absolute; top: 100%; left: 0; z-index: 1050;">
+                            </div>
+                    </form>
+
 
                 <ul class="navbar-nav ms-auto align-items-center">
                     <li class="nav-item me-3">
@@ -89,56 +98,205 @@
             {% endfor %}
         </div>
     {% endif %}
-        {% block content %}
+{% block content %}
+<div class="container mt-3">
+    <div class="row g-2">
         
-        <div class="hero-banner text-center shadow">
-            <h1 class="display-4 fw-bold">Trải Nghiệm Công Nghệ Đỉnh Cao</h1>
-            <p class="lead">Giảm giá lên đến 30% cho các dòng Smartphone cao cấp trong tuần lễ vàng.</p>
-            <a href="#" class="btn btn-warning btn-lg fw-bold px-5 rounded-pill mt-3 text-dark">Mua Ngay</a>
-        </div>
-
-        <div class="row text-center mb-5">
-            <h3 class="mb-4 fw-bold text-uppercase">Danh mục nổi bật</h3>
-            <div class="col-md-3 col-6 mb-3"><div class="p-3 bg-white shadow-sm rounded-3 fw-bold"><i class="fa-brands fa-apple fs-2 d-block mb-2"></i>iPhone</div></div>
-            <div class="col-md-3 col-6 mb-3"><div class="p-3 bg-white shadow-sm rounded-3 fw-bold"><i class="fa-solid fa-robot fs-2 d-block mb-2"></i>Samsung</div></div>
-            <div class="col-md-3 col-6 mb-3"><div class="p-3 bg-white shadow-sm rounded-3 fw-bold"><i class="fa-solid fa-mobile fs-2 d-block mb-2"></i>Xiaomi</div></div>
-            <div class="col-md-3 col-6 mb-3"><div class="p-3 bg-white shadow-sm rounded-3 fw-bold"><i class="fa-solid fa-headphones fs-2 d-block mb-2"></i>Phụ Kiện</div></div>
-        </div>
-
-        <h3 class="mb-4 fw-bold text-uppercase">Sản Phẩm Bán Chạy</h3>
-        <div class="row">
+        <div class="col-md-3 d-none d-md-block">
+            <div class="list-group shadow-sm rounded-4 border-0 overflow-hidden side-menu">
+                <a href="{% url 'product_list' %}?category=iphone" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2 border-0 border-bottom">
+                    <span><i class="fa-solid fa-mobile-screen-button me-3 text-danger"></i>Điện thoại, Tablet</span>
+                    <i class="fa-solid fa-chevron-right text-muted small"></i>
+                </a>
+                <a href="{% url 'product_list' %}?category=ipad" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2 border-0 border-bottom">
+                    <span><i class="fa-solid fa-tablet-screen-button me-3 text-danger"></i>iPad, Máy tính bảng</span>
+                    <i class="fa-solid fa-chevron-right text-muted small"></i>
+                </a>
+                <a href="{% url 'product_list' %}?category=laptop" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2 border-0 border-bottom">
+                    <span><i class="fa-solid fa-laptop me-3 text-danger"></i>Laptop, Macbook</span>
+                    <i class="fa-solid fa-chevron-right text-muted small"></i>
+                </a>
+                <a href="{% url 'product_list' %}?category=tai-nghe" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2 border-0 border-bottom">
+                    <span><i class="fa-solid fa-headphones me-3 text-danger"></i>Âm thanh, Tai nghe</span>
+                    <i class="fa-solid fa-chevron-right text-muted small"></i>
+                </a>
+                <a href="{% url 'product_list' %}?category=phu-kien" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2 border-0 border-bottom">
+                    <span><i class="fa-solid fa-plug me-3 text-danger"></i>Phụ kiện công nghệ</span>
+                    <i class="fa-solid fa-chevron-right text-muted small"></i>
+                </a>
+                <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2 border-0 border-bottom">
+                    <span><i class="fa-solid fa-rotate me-3 text-danger"></i>Thu cũ đổi mới</span>
+                    <i class="fa-solid fa-chevron-right text-muted small"></i>
+                </a>
+                 <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2 border-0">
+                    <span><i class="fa-solid fa-percent me-3 text-danger"></i>Khuyến mãi HOT</span>
+                    <i class="fa-solid fa-chevron-right text-muted small"></i>
+                </a>
+            </div>
             
-            {% for product in products %}
-            <div class="col-md-3 col-sm-6 mb-4">
-                <div class="card product-card h-100">
-                    
-                    {% if product.image_url %}
-                    <img src="{{ product.image_url }}" class="card-img-top product-img" alt="{{ product.name }}">
-                    {% else %}
-                    <img src="https://via.placeholder.com/250" class="card-img-top product-img" alt="No image">
-                    {% endif %}
-                    
-                    <div class="card-body d-flex flex-column">
-                        <a href="{% url 'product_detail' product.id %}" class="text-decoration-none text-dark">
-                            <h5 class="card-title fs-6">{{ product.name }}</h5>
-                        </a>
-                        <p class="price-text mt-auto mb-2">{{ product.price }} ₫</p>
-                       <button data-product="{{ product.id }}" data-action="add" class="btn btn-primary w-100 mt-2 update-cart">
-                            <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ
-                        </button>
+<div class="mt-3 rounded-4 overflow-hidden shadow-sm position-relative side-banner-hover">
+    <img src="https://images.unsplash.com/photo-1616348436168-de43ad0db179?q=80&w=500" 
+         class="w-100" 
+         style="height: 200px; object-fit: cover;" 
+         alt="Banner Khuyến Mãi">
+    
+    <div class="position-absolute bottom-0 start-0 w-100 p-3 text-white" 
+         style="background: linear-gradient(transparent, rgba(0,0,0,0.85));">
+        <span class="badge bg-warning text-dark mb-1">HOT DEAL</span>
+        <h6 class="fw-bold mb-0">Siêu Ưu Đãi Tháng 3</h6>
+        <p class="small mb-0" style="font-size: 0.75rem;">Giảm thêm 500k cho Học sinh - Sinh viên</p>
+    </div>
+    
+    <a href="{% url 'product_list' %}" class="stretched-link"></a>
+</div>
+
+<style>
+    .side-banner-hover {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        cursor: pointer;
+    }
+    .side-banner-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important;
+    }
+</style>
+
+        </div>
+
+        
+
+        <div class="col-md-9">
+            <div class="d-flex justify-content-around bg-white rounded-top-4 py-2 border-bottom shadow-sm d-none d-lg-flex">
+                <small class="fw-bold text-muted cursor-pointer hover-red">GALAXY S26 ULTRA</small>
+                <small class="fw-bold text-muted cursor-pointer hover-red">MACBOOK NEO</small>
+                <small class="fw-bold text-muted cursor-pointer hover-red">OPPO FIND N6</small>
+                <small class="fw-bold text-danger cursor-pointer">IPHONE 17E</small>
+            </div>
+
+            <div id="heroCarousel" class="carousel slide shadow-sm rounded-bottom-4 overflow-hidden mb-2" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    <div class="carousel-item active" data-bs-interval="4000">
+                        <img src="https://images.unsplash.com/photo-1616348436168-de43ad0db179?q=80&w=1200" class="d-block w-100" style="height: 350px; object-fit: cover;">
+                    </div>
+                    <div class="carousel-item" data-bs-interval="4000">
+                        <img src="https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?q=80&w=1200" class="d-block w-100" style="height: 350px; object-fit: cover;">
                     </div>
                 </div>
             </div>
-            
-            {% empty %}
-            <div class="col-12 text-center text-muted my-5">
-                <i class="fa-solid fa-box-open fs-1 mb-3"></i>
-                <p>Chưa có sản phẩm nào được thêm vào hệ thống.</p>
+
+            <div class="row g-2">
+                <div class="col-4">
+                    <div class="card border-0 shadow-sm rounded-3 h-100 bg-white p-2 text-center">
+                        <small class="fw-bold">Studio Display</small>
+                        <p class="small text-muted mb-1">Tuyệt diệu từ cái nhìn đầu tiên</p>
+                        <a href="#" class="text-danger small fw-bold text-decoration-none">Đặt trước ngay</a>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="card border-0 shadow-sm rounded-3 h-100 bg-white p-2 text-center border-start border-4 border-primary">
+                        <small class="fw-bold">Galaxy A17 5G</small>
+                        <p class="small text-muted mb-1">Ưu đãi đến 5.89Tr</p>
+                        <a href="#" class="text-primary small fw-bold text-decoration-none">Mua ngay</a>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="card border-0 shadow-sm rounded-3 h-100 bg-danger text-white p-2 text-center">
+                        <small class="fw-bold">Mua Laptop Online</small>
+                        <p class="small mb-1">Giảm thêm 5 triệu</p>
+                        <span class="badge bg-warning text-dark mx-auto" style="width: fit-content;">FREE SHIP</span>
+                    </div>
+                </div>
             </div>
-            {% endfor %}
+        </div>
+    </div>
+
+    <h3 class="mt-5 mb-4 fw-bold text-uppercase"><i class="fa-solid fa-fire text-danger"></i> Sản Phẩm Bán Chạy</h3>
+    <div class="row">
+{% for product in products|slice:":4" %}
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="card product-card h-100 shadow-sm">
+                <a href="{% url 'product_detail' product.id %}">
+                    <img src="{{ product.image_url|default:'https://via.placeholder.com/250' }}" class="card-img-top product-img">
+                </a>
+                <div class="card-body d-flex flex-column text-center">
+                    <h5 class="card-title fs-6 fw-bold">{{ product.name }}</h5>
+                    <p class="price-text mt-auto mb-2">{{ product.price|intcomma }} đ</p>
+                    <button data-product="{{ product.id }}" data-action="add" class="btn btn-primary w-100 rounded-pill update-cart">
+                        <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ
+                    </button>
+                </div>
             </div>
-        
-        {% endblock %}
+        </div>
+        {% endfor %}
+    </div>
+    
+    <hr class="my-5 border-secondary opacity-25"> <div class="all-products-area">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold text-uppercase mb-0">
+            <i class="fa-solid fa-layer-group text-primary me-2"></i> Khám Phá Toàn Bộ Sản Phẩm
+        </h3>
+        <span class="badge bg-light text-dark border rounded-pill px-3 py-2">Tổng: {{ products.count }} sản phẩm</span>
+    </div>
+
+    <div class="row">
+        {% for product in products %}
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="card product-card h-100 shadow-sm border-0 rounded-4 overflow-hidden">
+                <a href="{% url 'product_detail' product.id %}">
+                    <img src="{{ product.image_url|default:'https://via.placeholder.com/250' }}" 
+                         class="card-img-top product-img p-3" 
+                         style="height: 200px; object-fit: contain;" 
+                         alt="{{ product.name }}">
+                </a>
+                
+                <div class="card-body d-flex flex-column text-center">
+                    <h6 class="card-title fs-6 fw-bold text-truncate mb-2">{{ product.name }}</h6>
+                    
+                    <p class="price-text text-danger fw-bold mt-auto mb-3">
+                        {{ product.price|intcomma }} ₫
+                    </p>
+                    
+                    <button data-product="{{ product.id }}" data-action="add" 
+                            class="btn btn-primary w-100 rounded-pill update-cart btn-sm shadow-sm">
+                        <i class="fa-solid fa-cart-plus me-1"></i> Thêm vào giỏ
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <i class="fa-solid fa-box-open fs-1 text-muted mb-3"></i>
+            <p class="text-muted">Kho hàng hiện tại đang trống, unicorn đại vương vui lòng nhập hàng!</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+</div>
+
+<style>
+    /* CSS Tinh chỉnh cho giống ảnh ngài gửi */
+    .side-menu .list-group-item {
+        background-color: white;
+        transition: all 0.2s;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+    .side-menu .list-group-item:hover {
+        background-color: #f8f9fa;
+        color: #dc3545; /* Đổi màu chữ sang đỏ khi hover */
+        padding-left: 25px; /* Hiệu ứng đẩy sang phải nhẹ */
+    }
+    .hover-red:hover {
+        color: #dc3545 !important;
+        cursor: pointer;
+    }
+    .carousel-item {
+        transition: transform 1.5s ease-in-out !important; /* Trượt chậm mượt mà */
+    }
+    .cursor-pointer { cursor: pointer; }
+</style>
+{% endblock %}
     </div>
 
     <footer>
@@ -216,6 +374,61 @@
             location.reload(); 
         });
     }
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        const searchResults = document.getElementById('searchResults');
+        let timeout = null;
+
+        // Bắt sự kiện mỗi khi người dùng gõ phím
+        searchInput.addEventListener('input', function() {
+            clearTimeout(timeout); // Chống spam request (Debounce)
+            const query = this.value.trim();
+
+            if (query.length > 0) {
+                // Đợi 0.3s sau khi gõ xong mới gửi đi để đỡ lag server
+                timeout = setTimeout(() => {
+                    fetch(`/api/search/?q=${query}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        searchResults.innerHTML = ''; // Xóa trắng hộp gợi ý cũ
+                        
+                        if (data.data.length > 0) {
+                            // Nếu có sản phẩm, lặp qua và vẽ giao diện
+                            data.data.forEach(product => {
+                                const item = document.createElement('a');
+                                item.href = product.url; // Click vào bay thẳng đến trang chi tiết
+                                item.className = 'dropdown-item d-flex align-items-center py-2 border-bottom text-wrap';
+                                item.innerHTML = `
+                                    <img src="${product.image_url}" style="width: 45px; height: 45px; object-fit: cover; border-radius: 6px;" class="me-3 border shadow-sm">
+                                    <div style="width: 100%;">
+                                        <h6 class="mb-0 fw-bold text-dark fs-6 text-truncate" style="max-width: 200px;">${product.name}</h6>
+                                        <small class="text-danger fw-bold">${product.price} ₫</small>
+                                    </div>
+                                `;
+                                searchResults.appendChild(item);
+                            });
+                            searchResults.style.display = 'block'; // Hiện hộp gợi ý lên
+                        } else {
+                            // Nếu không tìm thấy
+                            searchResults.innerHTML = '<div class="p-3 text-center text-muted fw-bold">😭 Không tìm thấy sản phẩm nào!</div>';
+                            searchResults.style.display = 'block';
+                        }
+                    });
+                }, 300); // Đợi 300 mili-giây
+            } else {
+                searchResults.style.display = 'none'; // Giấu đi nếu xóa trắng ô tìm kiếm
+            }
+        });
+
+        // Tự động giấu hộp gợi ý khi click chuột ra chỗ khác
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.style.display = 'none';
+            }
+        });
+    });
 </script>
 </body>
 </html>

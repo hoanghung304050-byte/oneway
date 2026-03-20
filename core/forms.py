@@ -2,17 +2,39 @@ from django import forms
 from .models import Product, Store
 
 class ProductForm(forms.ModelForm):
+    # Chuyển price sang CharField để chấp nhận nhập dấu chấm và chữ 'đ'
+    price = forms.CharField(
+        label="Giá bán",
+        widget=forms.TextInput(attrs={
+            'class': 'form-control', 
+            'placeholder': 'Ví dụ: 25.190.000đ',
+            'id': 'price_input'
+        })
+    )
+
     class Meta:
         model = Product
-        fields = '__all__' # Lấy tất cả các cột trong bảng Product
+        fields = '__all__'
+
+    # === HÀM "GỌT RỬA" DỮ LIỆU TRƯỚC KHI LƯU ===
+    def clean_price(self):
+        data = self.cleaned_data['price']
         
-        # Nhúng class của Bootstrap vào để giao diện đẹp luôn
-        widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nhập tên điện thoại'}),
-            'price': forms.NumberInput(attrs={'class': 'form-control'}),
-            'image_url': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Link ảnh sản phẩm'}),
-            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
-        }
+        # Loại bỏ tất cả dấu chấm, dấu phẩy và chữ 'đ'
+        clean_data = data.replace('.', '').replace(',', '').replace('đ', '').replace(' ', '')
+        
+        try:
+            # Chuyển về kiểu số nguyên để lưu vào Database
+            return int(clean_data)
+        except ValueError:
+            raise forms.ValidationError("Ngài vui lòng chỉ nhập số và dấu chấm phân cách!")
+
+    # Hàm khởi tạo để hiển thị lại giá có dấu chấm khi ngài bấm SỬA sản phẩm
+    def __init__(self, *args, **kwargs):
+        super(ProductForm, self).__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            # Định dạng lại số 25190000 thành 25.190.000 để hiện lên ô nhập
+            self.initial['price'] = f"{self.instance.price:,.0f}".replace(',', '.')
 class StoreForm(forms.ModelForm):
     class Meta:
         model = Store
