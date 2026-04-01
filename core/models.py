@@ -2,19 +2,34 @@ from django.contrib.gis.db import models
 from django.contrib.auth.models import User
 
 class Product(models.Model):
-    name = models.CharField(max_length=255, verbose_name="Tên sản phẩm")
-    price = models.IntegerField(verbose_name="Giá bán")
-    image_url = models.URLField(blank=True, null=True, verbose_name="Link ảnh")
-    description = models.TextField(blank=True, null=True, verbose_name="Mô tả")
-
+    name = models.CharField(max_length=200)
+    price = models.FloatField()
+    image_url = models.CharField(max_length=500, null=True, blank=True) # Ảnh chính 1
+    
+    # Thêm các trường này nếu chưa có
+    image_url_2 = models.CharField(max_length=500, null=True, blank=True)
+    image_url_3 = models.CharField(max_length=500, null=True, blank=True)
+    image_url_4 = models.CharField(max_length=500, null=True, blank=True)
+    image_url_5 = models.CharField(max_length=500, null=True, blank=True)
+    
+    description = models.TextField(null=True, blank=True)
+    desc_image_url = models.CharField(max_length=500, null=True, blank=True) # Ảnh trong mô tả
+    
     def __str__(self):
         return self.name
 
+# core/models.py
 class Store(models.Model):
-    name = models.CharField(max_length=255, verbose_name="Tên cửa hàng")
-    address = models.CharField(max_length=500, verbose_name="Địa chỉ")
-    phone = models.CharField(max_length=20, verbose_name="Số điện thoại")
-    
+    name = models.CharField(max_length=200)
+    address = models.CharField(max_length=500)
+    phone = models.CharField(max_length=20, blank=True, null=True) # Thêm lại dòng này
+    description = models.TextField(blank=True, null=True)
+    opening_time = models.TimeField(null=True, blank=True)
+    closing_time = models.TimeField(null=True, blank=True)
+    rating = models.FloatField(default=5.0)
+    image_url = models.URLField(max_length=1000, blank=True, null=True)
+    location = models.PointField() # Tọa độ GIS
+
     # ĐÂY LÀ TRƯỜNG QUAN TRỌNG NHẤT CỦA ĐỒ ÁN GIS
     # PointField dùng để lưu Tọa độ (Kinh độ, Vĩ độ) của cửa hàng
     # srid=4326 là hệ tọa độ chuẩn của Google Maps / OpenStreetMap
