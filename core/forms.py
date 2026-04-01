@@ -38,7 +38,9 @@ class ProductForm(forms.ModelForm):
 class StoreForm(forms.ModelForm):
     class Meta:
         model = Store
-        fields = ['name', 'phone', 'address', 'location']
+        fields = ['name', 'address', 'phone', 'description', 
+            'opening_time', 'closing_time', 'rating', 
+            'image_url', 'location']
         
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'VD: ONEWAY Quận 1'}),
@@ -46,4 +48,7 @@ class StoreForm(forms.ModelForm):
             'address': forms.TextInput(attrs={'class': 'form-control', 'id': 'store_address', 'placeholder': 'Nhập địa chỉ chi tiết'}),
             # Quan trọng: Ẩn ô location đi, chúng ta sẽ dùng JavaScript để điền tọa độ vào đây!
             'location': forms.TextInput(attrs={'id': 'store_location', 'type': 'hidden'}),
+            'opening_time': forms.TimeInput(attrs={'type': 'time'}),
+            'closing_time': forms.TimeInput(attrs={'type': 'time'}),
+            'description': forms.Textarea(attrs={'rows': 3, 'class': 'form-control', 'placeholder': 'Nhập vài dòng giới thiệu...'}),
         }

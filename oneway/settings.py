@@ -12,8 +12,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 import os
-GDAL_LIBRARY_PATH =r"C:\Users\admn\AppData\Local\Programs\Python\Python313\Lib\site-packages\osgeo\gdal.dll"
-os.environ["PATH"] += r";C:\Users\admn\AppData\Local\Programs\Python\Python313\Lib\site-packages\osgeo"
+GDAL_LIBRARY_PATH =r"C:\Users\Administrator\anaconda3\envs\Al\Library\bin\gdal.dll"
+os.environ["PATH"] += r";C:\Users\Administrator\anaconda3\envs\Al\Library\bin"
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent

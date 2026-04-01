@@ -2,108 +2,194 @@
 
 {% block title %}Chi tiết {{ product.name }} - ONEWAY{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* 1. Ảnh chính */
+    #main-product-img {
+        width: 100%;
+        max-height: 450px;
+        object-fit: contain;
+        transition: opacity 0.3s ease-in-out;
+        border-radius: 15px;
+    }
+
+    /* 2. Dãy ảnh nhỏ (Gallery) */
+    .thumb-container {
+        display: flex; gap: 10px; justify-content: center;
+        margin-top: 20px; overflow-x: auto; padding: 5px;
+    }
+    .thumb-item {
+        width: 65px; height: 65px; object-fit: cover;
+        border: 2px solid #eee; border-radius: 10px;
+        cursor: pointer; transition: 0.2s;
+    }
+    .thumb-item:hover, .thumb-item.active {
+        border-color: #0d6efd; transform: scale(1.1);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    /* 3. Khu vực mô tả cuộn */
+    .description-scroll {
+        max-height: 400px; /* Tăng độ cao để chứa cả ảnh mô tả */
+        overflow-y: auto;  
+        padding-right: 15px; border-top: 1px solid #eee;
+        margin-top: 20px; padding-top: 15px;
+    }
+    .description-scroll::-webkit-scrollbar { width: 6px; }
+    .description-scroll::-webkit-scrollbar-track { background: #f8f9fa; }
+    .description-scroll::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 10px; }
+    .description-scroll::-webkit-scrollbar-thumb:hover { background: #0d6efd; }
+
+    .product-card-detail { background: #fff; border-radius: 20px; }
+</style>
+{% endblock %}
+
 {% block content %}
-<nav aria-label="breadcrumb">
-  <ol class="breadcrumb">
-    <li class="breadcrumb-item"><a href="{% url 'home' %}">Trang chủ</a></li>
-    <li class="breadcrumb-item"><a href="{% url 'product_list' %}">Điện thoại</a></li>
-    <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+<nav aria-label="breadcrumb" class="mb-4">
+  <ol class="breadcrumb bg-transparent p-0">
+    <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none">Trang chủ</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'product_list' %}" class="text-decoration-none">Sản phẩm</a></li>
+    <li class="breadcrumb-item active text-muted">{{ product.name }}</li>
   </ol>
 </nav>
 
-<div class="row bg-white p-4 shadow-sm rounded-3">
-    <div class="col-md-5 text-center mb-4">
-        {% if product.image_url %}
-        <img src="{{ product.image_url }}" class="img-fluid rounded" alt="{{ product.name }}">
-        {% else %}
-        <img src="https://via.placeholder.com/500" class="img-fluid rounded" alt="No image">
-        {% endif %}
+<div class="row product-card-detail p-4 shadow-sm border">
+    <div class="col-md-5 mb-4">
+        <div class="text-center bg-white p-3 rounded-4">
+            {% if product.image_url %}
+                <img id="main-product-img" src="{{ product.image_url }}" alt="{{ product.name }}">
+            {% else %}
+                <img id="main-product-img" src="https://via.placeholder.com/500" alt="No image">
+            {% endif %}
+        </div>
+
+        <div class="thumb-container">
+            <img src="{{ product.image_url }}" class="thumb-item active" onclick="changeImage(this.src, this)">
+            
+            {% if product.image_url_2 %}
+            <img src="{{ product.image_url_2 }}" class="thumb-item" onclick="changeImage(this.src, this)">
+            {% endif %}
+            
+            {% if product.image_url_3 %}
+            <img src="{{ product.image_url_3 }}" class="thumb-item" onclick="changeImage(this.src, this)">
+            {% endif %}
+            
+            {% if product.image_url_4 %}
+            <img src="{{ product.image_url_4 }}" class="thumb-item" onclick="changeImage(this.src, this)">
+            {% endif %}
+            
+            {% if product.image_url_5 %}
+            <img src="{{ product.image_url_5 }}" class="thumb-item" onclick="changeImage(this.src, this)">
+            {% endif %}
+        </div>
     </div>
 
     <div class="col-md-7">
-        <h2 class="fw-bold">{{ product.name }}</h2>
-        <p class="text-muted"><i class="fa-solid fa-check text-success"></i> Có sẵn tại các cửa hàng ONEWAY</p>
-        <h2 class="text-danger fw-bold my-3">{{ product.price }} ₫</h2>
+        <h2 class="fw-bold text-dark">{{ product.name }}</h2>
+        <p class="text-success small mb-3"><i class="fa-solid fa-circle-check"></i> Còn hàng tại hệ thống ONEWAY</p>
         
-        <div class="d-flex align-items-center mb-4 mt-4">
-            <label class="fw-bold me-3">Số lượng:</label>
-            <input type="number" class="form-control text-center w-25" value="1" min="1">
+        <div class="d-flex align-items-center gap-3 mb-4">
+            <h2 class="text-danger fw-bold mb-0">{{ product.price }} ₫</h2>
+            <span class="text-muted text-decoration-line-through small">42.000.000 ₫</span>
         </div>
 
-        <button data-product="{{ product.id }}" data-action="add" class="btn btn-primary w-100 mt-2 update-cart">
-            <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ
-        </button>
-        <a href="{% url 'map_view' %}" class="btn btn-outline-warning btn-lg text-dark"><i class="fa-solid fa-location-dot"></i> Tìm cửa hàng gần nhất</a>
+        <div class="p-3 bg-light rounded-4 mb-4 border-0">
+            <div class="d-flex align-items-center">
+                <label class="fw-bold me-3 text-secondary small text-uppercase">Số lượng:</label>
+                <input type="number" class="form-control text-center w-25 border-primary rounded-pill shadow-sm" value="1" min="1">
+            </div>
+        </div>
 
-        <div class="mt-5">
-            <h5 class="fw-bold border-bottom pb-2">Thông tin chi tiết</h5>
-            <div class="mt-3 lh-lg text-secondary">
+        <div class="row g-2 mb-4">
+            <div class="col-9">
+                <button data-product="{{ product.id }}" data-action="add" class="btn btn-primary btn-lg w-100 fw-bold rounded-pill update-cart shadow">
+                    <i class="fa-solid fa-cart-plus me-2"></i> THÊM VÀO GIỎ HÀNG
+                </button>
+            </div>
+            <div class="col-3">
+                <a href="{% url 'map_view' %}" class="btn btn-outline-warning btn-lg w-100 rounded-pill shadow" title="Cửa hàng gần nhất">
+                    <i class="fa-solid fa-location-dot"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="description-scroll">
+            <h6 class="fw-bold text-dark text-uppercase mb-3"><i class="fa-solid fa-circle-info me-2 text-primary"></i>Thông tin sản phẩm:</h6>
+            
+            {% if product.desc_image_url %}
+            <div class="text-center mb-4">
+                <img src="{{ product.desc_image_url }}" class="img-fluid rounded-4 shadow-sm" style="max-height: 250px;" alt="Thông tin tính năng">
+            </div>
+            {% endif %}
+
+            <div class="text-dark small lh-lg">
                 {% if product.description %}
                     {{ product.description|linebreaks }}
                 {% else %}
-                    <p>Đang cập nhật thông tin chi tiết cho sản phẩm này.</p>
+                    <p class="text-muted italic">Đang cập nhật nội dung mô tả cho siêu phẩm này...</p>
                 {% endif %}
             </div>
         </div>
     </div>
 </div>
-<hr class="my-5">
-    <div class="row mb-5">
-        
-        <div class="col-md-7">
-            <h4 class="fw-bold mb-4"><i class="fa-solid fa-comments"></i> Đánh giá từ khách hàng</h4>
-            
-            {% for review in reviews %}
-                <div class="card mb-3 border-0 shadow-sm bg-light">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h6 class="fw-bold mb-0 text-primary">👤 {{ review.user.username }}</h6>
-                            <small class="text-muted">{{ review.created_at|date:"d/m/Y H:i" }}</small>
-                        </div>
-                        <div class="text-warning mb-2 fs-6">
-                            ⭐ {{ review.rating }} / 5 Sao
-                        </div>
-                        <p class="mb-0 text-dark">{{ review.comment }}</p>
-                    </div>
-                </div>
-            {% empty %}
-                <div class="alert alert-secondary text-center border-0">
-                    Chưa có đánh giá nào. Hãy là người đầu tiên bóc tem sản phẩm này!
-                </div>
-            {% endfor %}
-        </div>
 
-        <div class="col-md-5">
-            <h4 class="fw-bold mb-4"><i class="fa-solid fa-pen-to-square"></i> Viết đánh giá của ngài</h4>
-            
-            {% if request.user.is_authenticated %}
-                <form method="POST" action="" class="card p-4 shadow-sm border-0">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label class="fw-bold mb-2">Chấm điểm</label>
-                        <select name="rating" class="form-select border-warning" required>
-                            <option value="5">⭐⭐⭐⭐⭐ (5 Sao - Quá đỉnh)</option>
-                            <option value="4">⭐⭐⭐⭐ (4 Sao - Rất tốt)</option>
-                            <option value="3">⭐⭐⭐ (3 Sao - Tạm được)</option>
-                            <option value="2">⭐⭐ (2 Sao - Hơi thất vọng)</option>
-                            <option value="1">⭐ (1 Sao - Quá tệ)</option>
-                        </select>
+<hr class="my-5">
+
+<div class="row mb-5">
+    <div class="col-md-7">
+        <h4 class="fw-bold mb-4">💬 Đánh giá từ cộng đồng</h4>
+        {% for review in reviews %}
+            <div class="card mb-3 border-0 shadow-sm bg-light rounded-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="fw-bold text-primary">@{{ review.user.username }}</span>
+                        <small class="text-muted">{{ review.created_at|date:"d/m/Y" }}</small>
                     </div>
-                    <div class="mb-3">
-                        <label class="fw-bold mb-2">Trải nghiệm của ngài</label>
-                        <textarea name="comment" class="form-control" rows="4" placeholder="Sản phẩm dùng mượt không ngài?..." required></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-warning fw-bold w-100 shadow-sm">
-                        <i class="fa-solid fa-paper-plane"></i> Gửi Đánh Giá
-                    </button>
-                </form>
-            {% else %}
-                <div class="alert alert-warning shadow-sm border-0 text-center p-4">
-                    <i class="fa-solid fa-lock fs-1 text-muted mb-3"></i><br>
-                    Ngài cần <a href="{% url 'login' %}" class="fw-bold text-danger text-decoration-none">Đăng nhập</a> để được tham gia bình luận chém gió!
+                    <div class="text-warning mb-2 small">⭐ {{ review.rating }}/5</div>
+                    <p class="mb-0 text-secondary small">{{ review.comment }}</p>
                 </div>
-            {% endif %}
-        </div>
-        
+            </div>
+        {% empty %}
+            <div class="p-4 text-center text-muted border rounded-4 bg-light">Chưa có ai bóc tem đánh giá sản phẩm này.</div>
+        {% endfor %}
     </div>
+
+    <div class="col-md-5">
+        <h4 class="fw-bold mb-4">✍️ Để lại cảm nghĩ</h4>
+        {% if request.user.is_authenticated %}
+            <form method="POST" action="" class="card p-4 shadow-sm border-0 rounded-4">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="small fw-bold mb-1">Chấm điểm</label>
+                    <select name="rating" class="form-select border-warning rounded-3">
+                        <option value="5">⭐⭐⭐⭐⭐ (Cực tốt)</option>
+                        <option value="4">⭐⭐⭐⭐ (Rất hài lòng)</option>
+                        <option value="3">⭐⭐⭐ (Bình thường)</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="small fw-bold mb-1">Trải nghiệm của ngài</label>
+                    <textarea name="comment" class="form-control rounded-3" rows="4" placeholder="Sản phẩm này thế nào ngài?..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-warning fw-bold w-100 rounded-pill shadow">GỬI NGAY</button>
+            </form>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    // Hàm đổi ảnh chính khi click ảnh nhỏ
+    function changeImage(src, element) {
+        const mainImg = document.getElementById('main-product-img');
+        mainImg.style.opacity = '0';
+        setTimeout(() => {
+            mainImg.src = src;
+            mainImg.style.opacity = '1';
+        }, 200);
+        
+        // Cập nhật class active
+        document.querySelectorAll('.thumb-item').forEach(t => t.classList.remove('active'));
+        element.classList.add('active');
+    }
+</script>
 {% endblock %}

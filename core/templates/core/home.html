@@ -1,7 +1,5 @@
 <!DOCTYPE html>
-{% load humanize %} <p class="price-text mt-auto mb-2">
-    {{ product.price|intcomma }} 
-</p>
+{% load humanize %} 
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -24,7 +22,6 @@
         footer a { color: #adb5bd; text-decoration: none; transition: color 0.3s; }
         footer a:hover { color: #fff; }
     </style>
-
     {% block extra_css %}{% endblock %}
 </head>
 <body>

@@ -4,42 +4,90 @@
 {% block extra_css %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
-    #map { height: 400px; width: 100%; border-radius: 8px; border: 2px solid #ddd; }
+    #map { height: 500px; width: 100%; border-radius: 12px; border: 2px solid #e3e6f0; }
+    .form-label { font-weight: 700; color: #4e73df; font-size: 0.9rem; margin-bottom: 0.4rem; }
+    .card { border: none; border-radius: 15px; }
+    .card-header { border-radius: 15px 15px 0 0 !important; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container mt-5 mb-5">
-    <div class="card shadow">
-        <div class="card-header bg-success text-white">
-            <h4 class="mb-0">📍 {{ title }}</h4>
+<div class="container mt-4 mb-5">
+    <div class="card shadow-lg">
+        <div class="card-header bg-success text-white py-3">
+            <h4 class="mb-0 fw-bold"><i class="fa-solid fa-store me-2"></i> {{ title }}</h4>
         </div>
-        <div class="card-body p-4">
+        <div class="card-body p-4 text-dark">
             <form method="POST" action="">
                 {% csrf_token %}
                 
                 <div class="row">
                     <div class="col-md-5">
-                        <h5 class="fw-bold mb-3">1. Thông tin cơ bản</h5>
-                        <div class="mb-3"><label class="fw-bold">Tên cửa hàng</label>{{ form.name }}</div>
-                        <div class="mb-3"><label class="fw-bold">Số điện thoại</label>{{ form.phone }}</div>
+                        <h5 class="fw-bold mb-4 border-bottom pb-2"><i class="fa-solid fa-pen-to-square me-2"></i>1. Thông tin chi tiết</h5>
+                        
                         <div class="mb-3">
-                            <label class="fw-bold">Địa chỉ</label>
+                            <label class="form-label">Tên cửa hàng</label>
+                            {{ form.name }}
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label class="form-label">Số điện thoại</label>
+                                {{ form.phone }}
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Đánh giá (1-5★)</label>
+                                {{ form.rating }}
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label class="form-label">Giờ mở cửa</label>
+                                {{ form.opening_time }}
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Giờ đóng cửa</label>
+                                {{ form.closing_time }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Địa chỉ chính xác</label>
                             {{ form.address }}
-                            <button type="button" id="btn-geocode" class="btn btn-sm btn-primary mt-2 w-100">
-                                <i class="fa-solid fa-magnifying-glass-location"></i> Lấy tọa độ từ Địa chỉ trên
+                            <button type="button" id="btn-geocode" class="btn btn-sm btn-primary mt-2 w-100 rounded-pill fw-bold">
+                                <i class="fa-solid fa-magnifying-glass-location"></i> Lấy tọa độ từ địa chỉ
                             </button>
                         </div>
-                        {{ form.location }}
+
+                        <div class="mb-3">
+                            <label class="form-label">Link ảnh cửa hàng (URL)</label>
+                            {{ form.image_url }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Mô tả cửa hàng</label>
+                            {{ form.description }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-danger">Tọa độ GIS (Auto)</label>
+                            {{ form.location }}
+                        </div>
                         
-                        <hr>
-                        <button type="submit" class="btn btn-success w-100 fw-bold btn-lg mt-3">💾 LƯU CỬA HÀNG</button>
-                        <a href="{% url 'custom_admin_dashboard' %}" class="btn btn-outline-secondary w-100 mt-2">Hủy bỏ</a>
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-success fw-bold btn-lg shadow-sm">
+                                <i class="fa-solid fa-floppy-disk me-2"></i> LƯU THÔNG TIN
+                            </button>
+                            <a href="{% url 'custom_admin_dashboard' %}" class="btn btn-outline-secondary">Hủy bỏ</a>
+                        </div>
                     </div>
 
                     <div class="col-md-7">
-                        <h5 class="fw-bold mb-3">2. Bản đồ định vị</h5>
-                        <p class="text-muted small">Nhấn "Lấy tọa độ" ở bên trái, hoặc click trực tiếp lên bản đồ để cắm cờ.</p>
+                        <h5 class="fw-bold mb-3"><i class="fa-solid fa-map-location-dot me-2"></i>2. Xác định vị trí bản đồ</h5>
+                        <div class="alert alert-info py-2 small">
+                            <i class="fa-solid fa-circle-info"></i> Click chuột lên bản đồ để di chuyển mốc cắm cờ (Marker).
+                        </div>
                         <div id="map"></div>
                     </div>
                 </div>
@@ -52,44 +100,66 @@
 {% block extra_js %}
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    // 1. Khởi tạo bản đồ mặc định
+    // 1. Khởi tạo bản đồ
     var map = L.map('map').setView([10.762622, 106.660172], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map);
     var marker = null;
 
-    // Lấy ô ẩn của Django để nhét dữ liệu vào
-    var locationInput = document.getElementById('store_location');
+    // LẤY ID CHÍNH XÁC TỪ DJANGO FORMS (Mặc định là id_...)
+    var locationInput = document.getElementById('location'); // Theo attrs id ngài đã đặt trong forms.py
+    var addressInput = document.getElementById('address');   // Theo attrs id ngài đã đặt trong forms.py
 
-    // Hàm cập nhật dữ liệu tọa độ theo chuẩn WKT (Điểm không gian của PostGIS)
+    // Hàm cập nhật input toạ độ
     function updateLocationInput(lat, lng) {
+        // Chuẩn WKT cho PostGIS
         locationInput.value = "POINT(" + lng + " " + lat + ")";
         if (marker) map.removeLayer(marker);
-        marker = L.marker([lat, lng]).addTo(map);
+        marker = L.marker([lat, lng], {draggable: true}).addTo(map);
+        
+        // Nếu ngài kéo thả marker, cập nhật lại tọa độ
+        marker.on('dragend', function(event) {
+            var position = marker.getLatLng();
+            updateLocationInput(position.lat, position.lng);
+        });
     }
 
-    // 2. Chức năng tự động (Geocoding)
+    // 2. Tự động lấy tọa độ từ địa chỉ (Geocoding)
     document.getElementById('btn-geocode').addEventListener('click', function() {
-        var address = document.getElementById('store_address').value;
-        if (!address) { alert("Vui lòng nhập địa chỉ trước!"); return; }
+        var address = addressInput.value;
+        if (!address) { alert("Đại vương hãy nhập địa chỉ đã!"); return; }
         
-        this.innerHTML = "Đang tìm...";
+        this.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang tìm...';
         var url = 'https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(address + ", Vietnam");
 
         fetch(url).then(res => res.json()).then(data => {
-            document.getElementById('btn-geocode').innerHTML = "Lấy tọa độ từ Địa chỉ trên";
+            this.innerHTML = '<i class="fa-solid fa-magnifying-glass-location"></i> Lấy tọa độ từ địa chỉ';
             if (data.length > 0) {
                 var lat = data[0].lat, lng = data[0].lon;
                 map.flyTo([lat, lng], 17);
                 updateLocationInput(lat, lng);
             } else {
-                alert("Không tìm thấy! Vui lòng tự click chọn trên bản đồ.");
+                alert("Không tìm thấy vị trí này! Ngài vui lòng tự chọn trên bản đồ nhé.");
             }
         });
     });
 
-    // 3. Chức năng thủ công (Click lên bản đồ)
+    // 3. Click chọn vị trí thủ công
     map.on('click', function(e) {
         updateLocationInput(e.latlng.lat, e.latlng.lng);
     });
+
+    // 4. Nếu đang ở chế độ SỬA (đã có tọa độ cũ)
+    window.onload = function() {
+        if (locationInput.value) {
+            // Parse chuỗi POINT(lng lat)
+            var coords = locationInput.value.replace('POINT(', '').replace(')', '').split(' ');
+            var lng = parseFloat(coords[0]);
+            var lat = parseFloat(coords[1]);
+            if (!isNaN(lat) && !isNaN(lng)) {
+                map.setView([lat, lng], 16);
+                updateLocationInput(lat, lng);
+            }
+        }
+    };
 </script>
 {% endblock %}

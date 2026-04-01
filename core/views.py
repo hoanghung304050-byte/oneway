@@ -8,7 +8,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from datetime import timedelta
-from django.db.models import Sum, F
+from django.db.models import Sum, F, Count
 from .forms import ProductForm, StoreForm
 from .models import Order, OrderItem, Product, Store, Review
 import json
@@ -75,6 +75,7 @@ def product_detail(request, pk):
 
     return render(request, 'core/product_detail.html', {'product': product, 'reviews': reviews})
 
+# core/views.py
 def map_view(request):
     stores = Store.objects.all()
     stores_data = []
@@ -82,7 +83,10 @@ def map_view(request):
         stores_data.append({
             'name': store.name,
             'address': store.address,
-            'phone': store.phone,
+            'description': store.description or "Chưa có mô tả.",
+            'hours': f"{store.opening_time.strftime('%H:%M')} - {store.closing_time.strftime('%H:%M')}" if store.opening_time else "Đang cập nhật",
+            'rating': store.rating,
+            'image': store.image_url or "https://via.placeholder.com/300x150", # Ảnh mặc định nếu thiếu
             'lat': store.location.y,
             'lng': store.location.x
         })
@@ -174,10 +178,38 @@ def custom_admin_dashboard(request):
     stores = Store.objects.all().order_by('-id')
     orders = Order.objects.filter(complete=True).order_by('-id')
     
-    # HỆ THỐNG PHÂN TÍCH DỮ LIỆU (ANALYTICS)
+    # --- THỜI GIAN HIỆN TẠI ---
+    now = timezone.localtime(timezone.now())
+    today = now.date()
+
+    # 1. LOGIC BIỂU ĐỒ HÔM NAY (Theo từng giờ 0h -> 23h)
+    today_labels = [f"{h}h" for h in range(24)]
+    today_data = [0] * 24
+    orders_today_list = Order.objects.filter(complete=True, date_ordered__date=today)
+    for o in orders_today_list:
+        hour = timezone.localtime(o.date_ordered).hour
+        today_data[hour] += 1
+
+    # 2. LOGIC BIỂU ĐỒ 7 NGÀY (Giữ nguyên logic của ngài)
+    chart_labels = []
+    chart_data = []
+    weekday_names = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"]
+    for i in range(6, -1, -1):
+        check_date = today - timedelta(days=i)
+        count = Order.objects.filter(complete=True, date_ordered__date=check_date).count()
+        day_index = check_date.isoweekday() # 1=T2, 7=CN
+        if day_index == 7: day_index = 0
+        chart_labels.append(weekday_names[day_index])
+        chart_data.append(count)
+
+    # 3. HỆ THỐNG THỐNG KÊ (Stats)
     def get_stats(days):
-        start_date = timezone.now() - timedelta(days=days)
-        filtered_orders = Order.objects.filter(complete=True, date_ordered__gte=start_date)
+        start_date = now - timedelta(days=days)
+        if days == 1: # Nếu là hôm nay thì lọc chính xác từ 00:00 ngày hôm nay
+            filtered_orders = Order.objects.filter(complete=True, date_ordered__date=today)
+        else:
+            filtered_orders = Order.objects.filter(complete=True, date_ordered__gte=start_date)
+            
         order_count = filtered_orders.count()
         order_items = OrderItem.objects.filter(order__in=filtered_orders)
         revenue = order_items.aggregate(total=Sum(F('quantity') * F('product__price')))['total'] or 0
@@ -187,22 +219,25 @@ def custom_admin_dashboard(request):
             'order_count': order_count,
             'revenue': revenue,
             'top_name': top_product['product__name'] if top_product else 'Chưa có dữ liệu',
-            'top_qty': top_product['total_sold'] if top_product else 0
         }
 
     stats = {
         'day': get_stats(1),
         'week': get_stats(7),
-        'month': get_stats(30),
-        'year': get_stats(365),
     }
 
-    return render(request, 'core/admin_dashboard.html', {
+    context = {
         'products': products, 
         'stores': stores, 
         'orders': orders,
-        'stats': stats
-    })
+        'stats': stats,
+        'today_labels': json.dumps(today_labels),
+        'today_data': json.dumps(today_data),
+        'chart_labels': json.dumps(chart_labels), 
+        'chart_data': json.dumps(chart_data),
+    }
+    return render(request, 'core/admin_dashboard.html', context)
+
 
 # ĐÂY LÀ HÀM XEM CHI TIẾT ĐƠN HÀNG ĐÃ ĐƯỢC PHỤC HỒI
 @staff_member_required
@@ -225,15 +260,36 @@ def admin_add_product(request):
 
 @staff_member_required
 def admin_edit_product(request, pk):
+    # 1. Lấy sản phẩm cần sửa. Nếu không thấy hiện lỗi 404.
     product = get_object_or_404(Product, id=pk)
+
     if request.method == 'POST':
-        form = ProductForm(request.POST, instance=product)
-        if form.is_valid():
-            form.save()
-            return redirect('custom_admin_dashboard')
-    else:
-        form = ProductForm(instance=product)
-    return render(request, 'core/admin_form.html', {'form': form, 'title': 'Sửa Sản Phẩm'})
+        # 2. Hứng dữ liệu từ các ô có thuộc tính 'name' trong HTML
+        product.name = request.POST.get('name')
+        
+        # Xử lý giá tiền (loại bỏ dấu chấm/phẩy nếu ngài lỡ nhập 24.000.000)
+        raw_price = request.POST.get('price', '0')
+        product.price = float(raw_price.replace('.', '').replace(',', ''))
+        
+        # Hứng bộ sưu tập 5 ảnh chính
+        product.image_url = request.POST.get('image_url')
+        product.image_url_2 = request.POST.get('image_url_2')
+        product.image_url_3 = request.POST.get('image_url_3')
+        product.image_url_4 = request.POST.get('image_url_4')
+        product.image_url_5 = request.POST.get('image_url_5')
+
+        # Hứng mô tả và ảnh trong mô tả
+        product.description = request.POST.get('description')
+        product.desc_image_url = request.POST.get('desc_image_url')
+
+        # 3. Lưu vào Database
+        product.save()
+
+        messages.success(request, f"🎉 Đã cập nhật siêu phẩm {product.name} thành công!")
+        return redirect('custom_admin_dashboard')
+
+    # 4. Khi vừa vào trang (GET): Gửi biến 'product' sang để hiện THÔNG TIN CŨ
+    return render(request, 'core/admin_form.html', {'product': product})
 
 @staff_member_required
 def admin_delete_product(request, pk):
@@ -286,5 +342,5 @@ def search_products(request):
                 'image_url': p.image_url,
                 'url': reverse('product_detail', args=[p.id]) # Tự động tạo link chi tiết
             })
-            
+       
     return JsonResponse({'data': results})
