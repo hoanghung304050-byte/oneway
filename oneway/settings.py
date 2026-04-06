@@ -131,6 +131,12 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 
+# Đường dẫn URL để truy cập ảnh trên web
+MEDIA_URL = '/media/'
+
+# Thư mục thực tế trên máy tính để chứa ảnh
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 LEAFLET_CONFIG = {
     'DEFAULT_CENTER': (10.762622, 106.660172), # Tọa độ TP.HCM
     'DEFAULT_ZOOM': 12,
@@ -139,3 +145,12 @@ LEAFLET_CONFIG = {
 }
 USE_THOUSAND_SEPARATOR = True
 THOUSAND_SEPARATOR = '.'
+
+# oneway/settings.py
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'uniconr546@gmail.com'
+EMAIL_HOST_PASSWORD = 'arcu lcyo rjhu udpw' # Không phải mật khẩu đăng nhập

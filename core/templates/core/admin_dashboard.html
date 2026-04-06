@@ -34,25 +34,33 @@
         <div class="sidebar-brand">
             <h5 class="fw-bold text-primary mb-0"><i class="fa-solid fa-shield-halved"></i> ONEWAY ADMIN</h5>
         </div>
-        <nav class="nav flex-column">
-            <a class="nav-link admin-nav-link active" onclick="showSection('section-stats', this)">
-                <i class="fa-solid fa-chart-simple"></i> Thống kê
-            </a>
-            <a class="nav-link admin-nav-link" onclick="showSection('section-products', this)">
-                <i class="fa-solid fa-box"></i> Sản phẩm
-            </a>
-            <a class="nav-link admin-nav-link" onclick="showSection('section-stores', this)">
-                <i class="fa-solid fa-map-location-dot"></i> Cửa hàng (GIS)
-            </a>
-            <a class="nav-link admin-nav-link" onclick="showSection('section-orders', this)">
-                <i class="fa-solid fa-file-invoice"></i> Đơn hàng
-            </a>
-            <hr class="mx-3">
-            <a class="nav-link text-danger" href="{% url 'home' %}">
-                <i class="fa-solid fa-arrow-left"></i> Quay lại Web
-            </a>
-        </nav>
-    </div>
+    {% if is_manager %} 
+    <nav class="nav flex-column">
+    <a class="nav-link admin-nav-link active" onclick="showSection('section-stats', this)">
+        <i class="fa-solid fa-chart-simple"></i> Thống kê
+    </a>
+    <a class="nav-link admin-nav-link" onclick="showSection('section-orders', this)">
+        <i class="fa-solid fa-file-invoice"></i> Đơn hàng
+    </a>
+    <a class="nav-link admin-nav-link" onclick="showSection('section-products', this)">
+        <i class="fa-solid fa-box"></i> Sản phẩm
+    </a>
+        <a class="nav-link admin-nav-link" onclick="showSection('section-inventory', this)">
+        <i class="fa-solid fa-boxes-stacked"></i> Quản lý tồn kho
+    </a>
+    <a class="nav-link admin-nav-link" onclick="showSection('section-stores', this)">
+        <i class="fa-solid fa-map-location-dot"></i> Cửa hàng
+    </a>
+    <a class="nav-link admin-nav-link" onclick="showSection('section-users', this)">
+        <i class="fa-solid fa-users-gear"></i> Quản lý người dùng
+    </a>
+</nav>
+        <hr class="mx-3 my-3 border-secondary opacity-25">
+        <a class="nav-link text-danger fw-bold" href="{% url 'home' %}">
+            <i class="fa-solid fa-arrow-left-long me-2"></i> QUAY LẠI TRANG WEB
+        </a>
+    </nav>
+</div>
 
     <div class="main-content">
         <div id="section-stats" class="admin-section">
@@ -124,29 +132,149 @@
             </div>
         </div>
 
-        <div id="section-products" class="admin-section" style="display: none;">
-            <div class="table-card">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold mb-0"><i class="fa-solid fa-mobile-screen text-primary me-2"></i>Danh sách Sản Phẩm</h5>
-                    <a href="{% url 'admin_add_product' %}" class="btn btn-primary btn-sm rounded-pill px-3">+ Thêm mới</a>
+        <div id="section-inventory" class="admin-section" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="fw-bold text-gray-800">
+                    <i class="fa-solid fa-boxes-stacked text-primary me-2"></i>
+                    Quản lý tồn kho {% if not is_super %}- Chi nhánh {{ request.user.managed_store.name }}{% endif %}
+                </h3>
+            </div>
+
+            <div class="table-card mb-4 border-start border-info border-5 shadow-sm bg-light">
+                <div class="p-3">
+                    <h6 class="fw-bold text-info mb-3"><i class="fa-solid fa-plus-circle me-2"></i> Cập nhật số lượng kho</h6>
+                    <form action="{% url 'update_stock' %}" method="POST" class="row g-2 align-items-end">
+                        {% csrf_token %}
+                        {% if is_super %}
+                        <div class="col-md-3">
+                            <label class="small fw-bold">Chọn chi nhánh</label>
+                            <select name="store_id" class="form-select form-select-sm rounded-pill px-3" required>
+                                <option value="">-- Chi nhánh --</option>
+                                {% for s in stores %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        {% endif %}
+                        <div class="col-md-4">
+                            <label class="small fw-bold">Chọn sản phẩm</label>
+                            <select name="product_id" class="form-select form-select-sm rounded-pill px-3" required>
+                                <option value="">-- Sản phẩm --</option>
+                                {% for p in products %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="small fw-bold">Số lượng mới</label>
+                            <input type="number" name="quantity" class="form-control form-control-sm rounded-pill px-3" placeholder="Ví dụ: 50" required>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-dark btn-sm w-100 rounded-pill fw-bold">Xác nhận</button>
+                        </div>
+                    </form>
                 </div>
+            </div>
+
+            <div class="table-card shadow-sm border-0">
                 <div class="scroll-area">
                     <table class="table table-hover align-middle mb-0">
-                        <thead>
-                            <tr><th>ID</th><th>Ảnh</th><th>Tên sản phẩm</th><th>Giá</th><th>Hành động</th></tr>
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Sản phẩm</th>
+                                {% if is_super %}<th>Chi nhánh</th>{% endif %}
+                                <th class="text-center">Số lượng</th>
+                                <th class="text-center">Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in inventory_list %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        {% if item.product.image %}
+                                            <img src="{{ item.product.image.url }}" width="35" class="rounded me-2 shadow-sm">
+                                        {% else %}
+                                            <img src="https://via.placeholder.com/35x35?text=SP" width="35" class="rounded me-2 shadow-sm">
+                                        {% endif %}
+                                        <div>
+                                            <div class="fw-bold">{{ item.product.name }}</div>
+                                            <small class="text-muted">Mã: #{{ item.product.id }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                {% if is_super %}
+                                <td><span class="badge bg-outline-secondary text-dark border">{{ item.store.name }}</span></td>
+                                {% endif %}
+                                <td class="text-center">
+                                    <span class="fs-5 fw-bold">{{ item.quantity }}</span>
+                                </td>
+                                <td class="text-center">
+                                    {% if item.quantity > 15 %}
+                                        <span class="badge bg-success rounded-pill px-3">Dồi dào</span>
+                                    {% elif item.quantity > 0 %}
+                                        <span class="badge bg-warning text-dark rounded-pill px-3">Sắp hết</span>
+                                    {% else %}
+                                        <span class="badge bg-danger rounded-pill px-3">Hết hàng</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="{% if is_super %}4{% else %}3{% endif %}" class="text-center py-5 text-muted">
+                                    <i class="fa-solid fa-box-open d-block mb-2" style="font-size: 2rem;"></i>
+                                    Kho đang trống rỗng, hãy nhập hàng ngay!
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        <div id="section-products" class="admin-section" style="display: none;">
+            <div class="table-card shadow-sm border-0">
+                <div class="row align-items-center mb-4">
+                    <div class="col-md-4">
+                        <h5 class="fw-bold mb-0"><i class="fa-solid fa-box text-primary me-2"></i>Sản Phẩm</h5>
+                    </div>
+                    <div class="col-md-5">
+                        <form method="GET" class="input-group input-group-sm">
+                            <input type="text" name="search_product" class="form-control rounded-start-pill px-3" 
+                                placeholder="Tìm tên hoặc mã SP..." value="{{ q_prod }}">
+                            <button class="btn btn-primary rounded-end-pill px-3" type="submit">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </button>
+                        </form>
+                    </div>
+                    <div class="col-md-3 text-end">
+                        {% if is_manager %}
+                        <a href="{% url 'admin_add_product' %}" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm">+ Thêm mới</a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="scroll-area">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-dark">
+                            <tr><th>ID</th><th>Ảnh</th><th>Tên sản phẩm</th><th>Giá</th><th class="text-center">Hành động</th></tr>
                         </thead>
                         <tbody>
                             {% for product in products %}
                             <tr>
-                                <td>{{ product.id }}</td>
-                                <td><img src="{{ product.image_url }}" width="40" class="rounded shadow-sm"></td>
+                                <td><small class="text-muted">#{{ product.id }}</small></td>
+                                <td><img src="{{ product.image_url }}" width="40" height="40" class="rounded shadow-sm object-fit-cover"></td>
                                 <td class="fw-bold">{{ product.name }}</td>
                                 <td class="text-danger fw-bold">{{ product.price|intcomma }} ₫</td>
-                                <td>
-                                    <a href="{% url 'admin_edit_product' product.id %}" class="btn btn-sm btn-outline-warning btn-circle"><i class="fa-solid fa-pen"></i></a>
-                                    <a href="{% url 'admin_delete_product' product.id %}" class="btn btn-sm btn-outline-danger btn-circle" onclick="return confirm('Trảm sản phẩm này?')"><i class="fa-solid fa-trash"></i></a>
+                                <td class="text-center">
+                                    {% if is_manager %}
+                                        <a href="{% url 'admin_edit_product' product.id %}" class="btn btn-sm btn-outline-warning btn-circle me-1"><i class="fa-solid fa-pen"></i></a>
+                                        <a href="{% url 'admin_delete_product' product.id %}" class="btn btn-sm btn-outline-danger btn-circle" onclick="return confirm('Trảm sản phẩm này?')"><i class="fa-solid fa-trash"></i></a>
+                                    {% else %}
+                                        <span class="badge bg-light text-muted border small"><i class="fa-solid fa-eye me-1"></i>Chỉ xem</span>
+                                    {% endif %}
                                 </td>
                             </tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-center py-4 text-muted">Không tìm thấy sản phẩm nào phù hợp.</td></tr>
                             {% endfor %}
                         </tbody>
                     </table>
@@ -179,36 +307,212 @@
         </div>
 
         <div id="section-orders" class="admin-section" style="display: none;">
-            <div class="table-card">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold mb-0"><i class="fa-solid fa-box-open text-warning me-2"></i>Đơn hàng mới nhất</h5>
+            <div class="table-card shadow-sm border-0">
+                <div class="row align-items-center mb-4">
+                    <div class="col-md-4">
+                        <h5 class="fw-bold mb-0"><i class="fa-solid fa-file-invoice text-warning me-2"></i>Đơn Hàng</h5>
+                    </div>
+                    <div class="col-md-8">
+                        <form method="GET" class="input-group input-group-sm ms-auto" style="max-width: 350px;">
+                            <input type="text" name="search_order" class="form-control rounded-start-pill px-3" 
+                                placeholder="Nhập mã đơn hàng (VD: 125)..." value="{{ q_order }}">
+                            <button class="btn btn-warning text-white rounded-end-pill px-3" type="submit">
+                                <i class="fa-solid fa-magnifying-glass"></i> Tìm đơn
+                            </button>
+                        </form>
+                    </div>
                 </div>
+
                 <div class="scroll-area">
                     <table class="table table-hover align-middle mb-0">
-                        <thead><tr><th>Mã</th><th>Ngày</th><th>Giao dịch</th><th>Hành động</th></tr></thead>
+                        <thead class="table-dark">
+                            <tr><th>Mã Đơn</th><th>Ngày đặt</th><th>Khách hàng</th><th class="text-center">Chi tiết</th></tr>
+                        </thead>
                         <tbody>
                             {% for order in orders %}
                             <tr>
                                 <td class="fw-bold text-primary">#{{ order.id }}</td>
                                 <td class="small">{{ order.date_ordered|date:"d/m/Y H:i" }}</td>
-                                <td class="small text-muted">{{ order.transaction_id|default:"COD" }}</td>
-                                <td><a href="{% url 'admin_order_detail' order.id %}" class="btn btn-info btn-sm text-white rounded-pill px-3">Chi tiết</a></td>
+                                <td>{{ order.user.username|default:"Khách vãng lai" }}</td>
+                                <td class="text-center">
+                                    <a href="{% url 'admin_order_detail' order.id %}" class="btn btn-info btn-sm text-white rounded-pill px-3 shadow-sm">
+                                        <i class="fa-solid fa-circle-info me-1"></i> Xem đơn
+                                    </a>
+                                </td>
                             </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-center py-4 text-muted">Không tìm thấy đơn hàng nào.</td></tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
+
+        <div id="section-no-permission" class="admin-section" style="display: none;">
+            <div class="card border-0 shadow-sm rounded-4 text-center py-5">
+                <div class="card-body">
+                    <div class="mb-4">
+                        <i class="fa-solid fa-shield-lock text-danger" style="font-size: 80px; opacity: 0.2;"></i>
+                    </div>
+                    <h2 class="fw-bold text-dark">TRUY CẬP BỊ TỪ CHỐI</h2>
+                    <p class="text-muted fs-5 mx-auto" style="max-width: 500px;">
+                        Chào <strong>{{ request.user.username }}</strong>, ngài không có quyền hạn để xem hoặc chỉnh sửa nội dung trong mục này. 
+                    </p>
+                    <div class="mt-4">
+                        <button class="btn btn-primary rounded-pill px-4 py-2 fw-bold" onclick="showSection('section-stats', document.querySelector('.admin-nav-link'))">
+                            <i class="fa-solid fa-house me-2"></i>Quay về Thống kê
+                        </button>
+                    </div>
+                    <p class="mt-4 small text-secondary italic">
+                        * Vui lòng liên hệ <strong>Siêu Quản Trị</strong> để yêu cầu cấp quyền.
+                    </p>
+                </div>  
+            </div>
+        </div>
+
+      {% if is_super %}
+<div id="section-users" class="admin-section" style="display: none;">
+    <div class="table-card shadow-sm border-0 mb-5">
+        <div class="row align-items-center mb-4">
+            <div class="col-md-4">
+                <h5 class="fw-bold mb-0 text-dark">
+                    <i class="fa-solid fa-users-gear text-info me-2"></i>Thành Viên Hệ Thống
+                </h5>
+            </div>
+            <div class="col-md-8">
+                <form method="GET" class="input-group input-group-sm ms-auto" style="max-width: 400px;">
+                    <input type="text" name="search_user" class="form-control rounded-start-pill px-3" 
+                           placeholder="Tìm Username hoặc Email..." value="{{ q_user }}">
+                    <button class="btn btn-info text-white rounded-end-pill px-3" type="submit">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="scroll-area">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Chức vụ hiện tại</th>
+                        <th class="text-center">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr>
+                        <td class="fw-bold">{{ u.username }}</td>
+                        <td class="small text-muted">{{ u.email }}</td>
+                        <td>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-primary dropdown-toggle rounded-pill px-3 shadow-sm" type="button" data-bs-toggle="dropdown">
+                                    {% if u.is_superuser %}Siêu Quản Trị
+                                    {% elif u.is_staff and u.groups.all.0.name == 'NhanVien' %}Nhân Viên
+                                    {% elif u.is_staff %}Quản Lý
+                                    {% else %}Khách Hàng{% endif %}
+                                </button>
+                                <ul class="dropdown-menu shadow border-0">
+                                    <li><a class="dropdown-item" href="{% url 'change_user_role' u.id 'quanly' %}">Lên Quản Lý</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'change_user_role' u.id 'nhanvien' %}">Lên Nhân Viên</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-danger" href="{% url 'change_user_role' u.id 'khach' %}">Hạ xuống Khách</a></li>
+                                </ul>
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            {% if not u.is_superuser %}
+                            <a href="{% url 'delete_user' u.id %}" class="btn btn-sm btn-outline-danger btn-circle" onclick="return confirm('Xóa vĩnh viễn người dùng này?')">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </a>
+                            {% else %}
+                            <i class="fa-solid fa-lock text-muted"></i>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
+
+    <div class="table-card border-start border-primary border-5 shadow-sm">
+        <h5 class="fw-bold text-primary mb-3">
+            <i class="fa-solid fa-people-arrows me-2"></i>Điều động Quản lý chi nhánh
+        </h5>
+        <p class="text-muted small mb-4">
+            <i class="fa-solid fa-circle-info me-1"></i> Lưu ý: Khi điều động, hệ thống sẽ tự động cập nhật vị trí mới cho nhân sự.
+        </p>
+        
+        <form action="{% url 'transfer_manager' %}" method="POST" class="row g-3 align-items-end">
+            {% csrf_token %}
+            <div class="col-md-5">
+                <label class="form-label small fw-bold">Chọn nhân sự (Quản lý/Nhân viên)</label>
+                <select name="user_id" class="form-select rounded-pill px-3" required>
+                    <option value="" selected disabled>-- Chọn người cần điều động --</option>
+                    {% for u in staff_users %}
+                    <option value="{{ u.id }}">{{ u.username }} (Hiện tại: {{ u.managed_store.name|default:"Chưa có" }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-5">
+                <label class="form-label small fw-bold">Chọn chi nhánh mới</label>
+                <select name="store_id" class="form-select rounded-pill px-3" required>
+                    <option value="" selected disabled>-- Chọn chi nhánh đích --</option>
+                    {% for s in stores %}
+                    <option value="{{ s.id }}">{{ s.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold shadow-sm">
+                    Xác nhận
+                </button>
+            </div>
+        </form>
+    </div>
+</div> 
+{% endif %}
 </div>
 
 <script>
     function showSection(sectionId, element) {
-        document.querySelectorAll('.admin-section').forEach(sec => sec.style.display = 'none');
-        const target = document.getElementById(sectionId);
-        if (target) target.style.display = 'block';
-        document.querySelectorAll('.admin-nav-link').forEach(link => link.classList.remove('active'));
+        // Lấy thông tin quyền hạn từ Django (ép kiểu về boolean trong JS)
+        const isSuper = {{ is_super|yesno:"true,false" }};
+        const isManager = {{ is_manager|yesno:"true,false" }};
+        const isStaffOnly = {{ is_staff_only|yesno:"true,false" }};
+
+        let targetId = sectionId;
+
+        // --- LOGIC KIỂM TRA QUYỀN ---
+        
+        // 1. Chỉ Superuser mới được vào mục Người dùng và Cửa hàng
+        if ((sectionId === 'section-users' || sectionId === 'section-stores') && !isSuper) {
+            targetId = 'section-no-permission';
+        }
+
+        // 2. Nhân viên (Staff Only) chỉ được xem Thống kê, Đơn hàng, Sản phẩm (Read-only đã xử lý ở bảng)
+        // Nếu ngài muốn chặn thêm mục nào với nhân viên thì thêm điều kiện ở đây.
+
+        // --- THỰC HIỆN HIỂN THỊ ---
+        
+        // Ẩn tất cả các section
+        document.querySelectorAll('.admin-section').forEach(sec => {
+            sec.style.display = 'none';
+        });
+
+        // Hiển thị section mục tiêu (hoặc section chặn)
+        const targetSection = document.getElementById(targetId);
+        if (targetSection) {
+            targetSection.style.display = 'block';
+        }
+
+        // Cập nhật trạng thái Active cho Sidebar
+        document.querySelectorAll('.admin-nav-link').forEach(link => {
+            link.classList.remove('active');
+        });
         element.classList.add('active');
     }
 
@@ -248,5 +552,28 @@
             options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
         });
     });
+    // --- LOGIC KIỂM TRA QUYỀN MỚI ---
+    
+    // Chỉ Superuser mới được vào mục Người dùng, Cửa hàng và thực hiện Điều động
+    // Riêng Inventory thì Manager cũng được vào xem kho của họ.
+    if ((sectionId === 'section-users' || sectionId === 'section-stores') && !isSuper) {
+        targetId = 'section-no-permission';
+    }
+
+    // Thực hiện hiển thị (phần này giữ nguyên của ngài)
+    document.querySelectorAll('.admin-section').forEach(sec => {
+        sec.style.display = 'none';
+    });
+
+    const targetSection = document.getElementById(targetId);
+    if (targetSection) {
+        targetSection.style.display = 'block';
+    }
+
+    document.querySelectorAll('.admin-nav-link').forEach(link => {
+        link.classList.remove('active');
+    });
+    element.classList.add('active');
 </script>
+{% endif %}
 {% endblock %}

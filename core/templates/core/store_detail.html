@@ -1,0 +1,66 @@
+{% extends 'core/home.html' %}
+{% block content %}
+<div class="container mt-4">
+    <div id="storeHero" class="carousel slide rounded-4 overflow-hidden shadow mb-5" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <img src="{{ store.image.url }}" class="d-block w-100" style="height: 400px; object-fit: cover;">
+                <div class="carousel-caption bg-dark bg-opacity-50 rounded">
+                    <h3>{{ store.name }}</h3>
+                    <p>{{ store.address }}</p>
+                </div>
+            </div>
+            </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-4 mb-4 rounded-4">
+                <h4 class="fw-bold text-primary">Thông tin chi nhánh</h4>
+                <p class="text-muted"><i class="fa-solid fa-star text-warning"></i> {{ store.rating }} Đánh giá</p>
+                <hr>
+                <p><strong>Mô tả:</strong> {{ store.description }}</p>
+                <div class="alert alert-info">
+                    <i class="fa-solid fa-clock"></i> Giờ mở cửa: 08:30 - 21:30
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <h4 class="fw-bold mb-4">Sản phẩm sẵn có tại quầy</h4>
+            <div class="row g-3">
+                {% for item in inventory_items %}
+                <div class="col-md-6">
+                    <div class="card h-100 border-0 shadow-sm p-3 rounded-4">
+                        <div class="d-flex">
+                            {% if item.product.image %}
+                            <img src="{{ item.product.image.url }}" style="width: 80px; height: 80px; object-fit: contain;">
+                            {% else %}
+                                <img src="https://via.placeholder.com/35x35?text=SP" width="35" class="rounded me-2 shadow-sm">
+                            {% endif %}
+                            <div class="ms-3">
+                                <h6 class="fw-bold mb-1">{{ item.product.name }}</h6>
+                                <p class="text-danger fw-bold mb-0">{{ item.product.price }} ₫</p>
+                                <small class="text-success">Còn lại: {{ item.quantity }} máy</small>
+                            </div>
+                        </div>
+                        <div class="row g-2 mt-3">
+                            <div class="col-6">
+                                <button class="btn btn-primary btn-sm w-100 rounded-pill">Đặt Online</button>
+                            </div>
+                            <div class="col-6">
+                                <button class="btn btn-outline-dark btn-sm w-100 rounded-pill">Mua tại quầy</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-5">
+                    <p class="text-muted italic">Chi nhánh này đang trong quá trình nhập hàng mới. Đại vương hãy quay lại sau nhé!</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

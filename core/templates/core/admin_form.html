@@ -27,8 +27,7 @@
             <h5 class="mb-0 fw-bold"><i class="fa-solid fa-pen-to-square me-2"></i>CẬP NHẬT: {{ product.name }}</h5>
         </div>
         <div class="card-body p-4 bg-light">
-            <form method="POST">
-                {% csrf_token %}
+        <form method="POST" enctype="multipart/form-data"> {% csrf_token %}
                 
                 <div class="row mb-4">
                     <div class="col-md-8">
@@ -41,36 +40,63 @@
                     </div>
                 </div>
 
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="fw-bold text-primary">Loại sản phẩm</label>
+                        <select name="category" class="form-select">
+                            <option value="phone" {% if product.category == 'phone' %}selected{% endif %}>Điện thoại, Tablet</option>
+                            <option value="laptop" {% if product.category == 'laptop' %}selected{% endif %}>Laptop, Macbook</option>
+                            <option value="ipad" {% if product.category == 'ipad' %}selected{% endif %}>iPad, Máy tính bảng</option>
+                            <option value="am-thanh" {% if product.category == 'am-thanh' %}selected{% endif %}>Âm thanh, Tai nghe</option>
+                            <option value="phu-kien" {% if product.category == 'phu-kien' %}selected{% endif %}>Phụ kiện công nghệ</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="fw-bold text-primary">Thương hiệu</label>
+                        <input type="text" name="brand" class="form-control" placeholder="VD: Apple, Samsung..." value="{{ product.brand|default:'' }}">
+                    </div>
+                </div>
+
                 <div class="section-divider"><span>Bộ sưu tập ảnh sản phẩm</span></div>
                 
                 <div class="row g-3">
                     <div class="col-md-4">
-                        <label class="small fw-bold text-primary">Ảnh bìa chính (URL):</label>
-                        <input type="text" name="image_url" id="url_1" class="form-control form-control-sm mb-2" value="{{ product.image_url }}" oninput="updatePreview(1)">
-                        <div class="preview-box"><img id="pre_1" src="{{ product.image_url|default:'https://via.placeholder.com/150' }}"></div>
+                        <label class="small fw-bold text-primary">Ảnh bìa chính:</label>
+                        <input type="file" name="image" id="url_1" class="form-control form-control-sm mb-2" onchange="updatePreview(event, 1)">
+                        <div class="preview-box">
+                            <img id="pre_1" src="{% if product.image %}{{ product.image.url }}{% else %}https://via.placeholder.com/150{% endif %}">
+                        </div>
                     </div>
 
                     <div class="col-md-8">
                         <div class="row g-2">
                             <div class="col-3">
                                 <label class="small fw-bold">Ảnh 2:</label>
-                                <input type="text" name="image_url_2" id="url_2" class="form-control form-control-sm mb-2" value="{{ product.image_url_2|default:'' }}" oninput="updatePreview(2)">
-                                <div class="preview-box" style="height: 80px;"><img id="pre_2" src="{{ product.image_url_2|default:'https://via.placeholder.com/150' }}"></div>
+                                <input type="file" name="image_2" id="url_2" class="form-control form-control-sm mb-2" onchange="updatePreview(event, 2)">
+                                <div class="preview-box" style="height: 80px;">
+                                    <img id="pre_2" src="{% if product.image_2 %}{{ product.image_2.url }}{% else %}https://via.placeholder.com/150{% endif %}">
+                                </div>
                             </div>
                             <div class="col-3">
                                 <label class="small fw-bold">Ảnh 3:</label>
-                                <input type="text" name="image_url_3" id="url_3" class="form-control form-control-sm mb-2" value="{{ product.image_url_3|default:'' }}" oninput="updatePreview(3)">
-                                <div class="preview-box" style="height: 80px;"><img id="pre_3" src="{{ product.image_url_3|default:'https://via.placeholder.com/150' }}"></div>
+                                <input type="file" name="image_3" id="url_3" class="form-control form-control-sm mb-2" onchange="updatePreview(event, 3)">
+                                <div class="preview-box" style="height: 80px;">
+                                    <img id="pre_3" src="{% if product.image_3 %}{{ product.image_3.url }}{% else %}https://via.placeholder.com/150{% endif %}">
+                                </div>
                             </div>
                             <div class="col-3">
                                 <label class="small fw-bold">Ảnh 4:</label>
-                                <input type="text" name="image_url_4" id="url_4" class="form-control form-control-sm mb-2" value="{{ product.image_url_4|default:'' }}" oninput="updatePreview(4)">
-                                <div class="preview-box" style="height: 80px;"><img id="pre_4" src="{{ product.image_url_4|default:'https://via.placeholder.com/150' }}"></div>
+                                <input type="file" name="image_4" id="url_4" class="form-control form-control-sm mb-2" onchange="updatePreview(event, 4)">
+                                <div class="preview-box" style="height: 80px;">
+                                    <img id="pre_4" src="{% if product.image_4 %}{{ product.image_4.url }}{% else %}https://via.placeholder.com/150{% endif %}">
+                                </div>
                             </div>
                             <div class="col-3">
                                 <label class="small fw-bold">Ảnh 5:</label>
-                                <input type="text" name="image_url_5" id="url_5" class="form-control form-control-sm mb-2" value="{{ product.image_url_5|default:'' }}" oninput="updatePreview(5)">
-                                <div class="preview-box" style="height: 80px;"><img id="pre_5" src="{{ product.image_url_5|default:'https://via.placeholder.com/150' }}"></div>
+                                <input type="file" name="image_5" id="url_5" class="form-control form-control-sm mb-2" onchange="updatePreview(event, 5)">
+                                <div class="preview-box" style="height: 80px;">
+                                    <img id="pre_5" src="{% if product.image_5 %}{{ product.image_5.url }}{% else %}https://via.placeholder.com/150{% endif %}">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -84,10 +110,10 @@
                         <textarea name="description" class="form-control rounded-3" rows="12">{{ product.description }}</textarea>
                     </div>
                     <div class="col-md-5">
-                        <label class="fw-bold small mb-1 text-danger">Ảnh minh họa trong mô tả (URL):</label>
-                        <input type="text" name="desc_image_url" id="url_desc" class="form-control mb-2" value="{{ product.desc_image_url|default:'' }}" oninput="updatePreview('desc')">
+                        <label class="fw-bold small mb-1 text-danger">Ảnh minh họa trong mô tả:</label>
+                        <input type="file" name="desc_image" id="url_desc" class="form-control mb-2" onchange="updatePreview(event, 'desc')">
                         <div class="preview-box" style="height: 250px; border-color: #ffc107;">
-                            <img id="pre_desc" src="{{ product.desc_image_url|default:'https://via.placeholder.com/300x200?text=Mo+ta+hinh+anh' }}">
+                            <img id="pre_desc" src="{% if product.desc_image %}{{ product.desc_image.url }}{% else %}https://via.placeholder.com/300x200?text=Mo+ta+hinh+anh{% endif %}">
                         </div>
                     </div>
                 </div>
@@ -102,10 +128,21 @@
 </div>
 
 <script>
-    function updatePreview(id) {
-        const val = document.getElementById('url_' + id).value;
+    // Hàm cập nhật Preview thông minh cho File Upload
+    function updatePreview(event, id) {
+        const file = event.target.files[0];
         const img = document.getElementById('pre_' + id);
-        img.src = val ? val : "https://via.placeholder.com/150?text=No+Image";
+        
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                img.src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        } else {
+            // Nếu không có file (người dùng bấm hủy chọn), trẫm sẽ giữ nguyên ảnh cũ 
+            // hoặc hiện placeholder tùy ý đại vương
+        }
     }
 </script>
 {% endblock %}

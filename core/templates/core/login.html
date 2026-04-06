@@ -1,27 +1,47 @@
 {% extends 'core/home.html' %}
-{% block title %}Đăng Nhập{% endblock %}
-{% block content %}
-<div class="row justify-content-center mt-5">
-    <div class="col-md-5">
-        <div class="card shadow">
-            <div class="card-header bg-primary text-white text-center">
-                <h4>Đăng Nhập Hệ Thống</h4>
-            </div>
-            <div class="card-body p-4">
-                <form method="POST" action="">
-                    {% csrf_token %}
-                    {% for field in form %}
+{% block header %}{% endblock %} {% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+                <div class="card-header bg-dark text-white text-center py-4">
+                    <h3 class="fw-bold mb-0 text-uppercase">Đăng Nhập Hệ Thống</h3>
+                    <small class="text-warning">Chào mừng đại vương trở lại</small>
+                </div>
+
+                <div class="card-body p-5 bg-white">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-danger alert-dismissible fade show small py-2" role="alert">
+                                <i class="fa-solid fa-circle-exclamation me-2"></i> {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="POST" action="{% url 'login' %}">
+                        {% csrf_token %}
+                        
                         <div class="mb-3">
-                            <label class="form-label fw-bold">{{ field.label }}</label>
-                            {{ field }}
+                            <label class="fw-bold mb-1"><i class="fa-solid fa-user me-2 text-primary"></i>Tên đăng nhập</label>
+                            <input type="text" name="username" class="form-control rounded-pill px-4" placeholder="Nhập username của ngài" required>
                         </div>
-                    {% endfor %}
-                    
-                    <button type="submit" class="btn btn-primary w-100 fw-bold">Đăng Nhập</button>
-                    <div class="text-center mt-3">
-                        Chưa có tài khoản? <a href="{% url 'register' %}" class="text-decoration-none">Đăng ký ngay</a>
-                    </div>
-                </form>
+
+                        <div class="mb-4">
+                            <label class="fw-bold mb-1"><i class="fa-solid fa-lock me-2 text-primary"></i>Mật khẩu</label>
+                            <input type="password" name="password" class="form-control rounded-pill px-4" placeholder="********" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-bold shadow-sm mb-3">
+                            <i class="fa-solid fa-right-to-bracket me-2"></i> ĐĂNG NHẬP NGAY
+                        </button>
+
+                        <div class="text-center">
+                            <span class="small text-muted">Chưa có tài khoản?</span>
+                            <a href="{% url 'register' %}" class="small fw-bold text-decoration-none text-primary">Đăng ký ngay tại đây</a>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
