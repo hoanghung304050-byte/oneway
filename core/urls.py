@@ -33,6 +33,12 @@ urlpatterns = [
     path('store/<int:store_id>/', views.store_detail, name='store_detail'),
     path('quan-tri/dieu-dong/', views.transfer_manager, name='transfer_manager'),
     path('quan-tri/cap-nhat-kho/', views.update_stock, name='update_stock'),
+    path('quen-mat-khau/', views.forgot_password_otp, name='forgot_password_otp'),
+    path('xac-nhan-otp-quen-mk/', views.verify_forgot_otp, name='verify_forgot_otp'),
+    path('dat-lai-mk/', views.set_new_password, name='set_new_password'),
+    path('quan-ly-kho/', views.import_inventory_excel, name='inventory_management'),
+    path('xuat-kho-excel/', views.export_inventory_excel, name='export_inventory_excel'),
+    path('product/<int:product_id>/review/', views.submit_review, name='submit_review'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

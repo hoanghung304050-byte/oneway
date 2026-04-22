@@ -44,7 +44,31 @@ INSTALLED_APPS = [
     'core',
     'django.contrib.gis', # Thêm dòng này để dùng các hàm bản đồ
     'leaflet', # THÊM DÒNG NÀY VÀO ĐÂY
+    'django_user_agents',
+    'ckeditor',
+    'ckeditor_uploader',
 ]
+
+CKEDITOR_UPLOAD_PATH = "uploads/editor/"
+
+# Cấu hình thư mục lưu ảnh khi upload từ editor
+CKEDITOR_UPLOAD_PATH = "uploads/editor/"
+
+# Tùy chỉnh giao diện thanh công cụ giống ảnh ngài gửi
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toolbar': 'Custom',
+        'toolbar_Custom': [
+            ['Format', 'Bold', 'Italic', 'Underline'],
+            ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent'],
+            ['Link', 'Unlink'],
+            ['Image'], # Nút chèn ảnh
+            ['Maximize']
+        ],
+        'height': 300, # Chiều cao mặc định của khung nhập
+        'width': '100%',
+    }
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -54,6 +78,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_user_agents.middleware.UserAgentMiddleware'
 ]
 
 ROOT_URLCONF = 'oneway.urls'
@@ -154,3 +179,4 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'uniconr546@gmail.com'
 EMAIL_HOST_PASSWORD = 'arcu lcyo rjhu udpw' # Không phải mật khẩu đăng nhập
+

@@ -6,41 +6,55 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 <style>
-    #map { height: 500px; width: 100%; border-radius: 15px; border: 2px solid #4e73df; z-index: 1; }
+    /* Map & GIS Style */
+    #map { height: 450px; width: 100%; border-radius: 20px; border: 2px solid #4e73df; z-index: 1; }
     .form-label { font-weight: 700; color: #4e73df; font-size: 0.85rem; margin-bottom: 0.3rem; }
     
-    /* Style Autocomplete giống hệt map.html của ngài */
     .autocomplete-results {
         position: absolute; background: white; z-index: 2000;
         width: 100%; max-height: 200px; overflow-y: auto;
         border: 1px solid #ddd; border-radius: 8px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: none; margin-top: 5px;
     }
-    .autocomplete-item {
-        padding: 10px 15px; cursor: pointer; font-size: 0.85rem; color: #333;
-        border-bottom: 1px solid #f1f1f1; transition: background 0.2s;
-    }
+    .autocomplete-item { padding: 10px 15px; cursor: pointer; font-size: 0.85rem; border-bottom: 1px solid #f1f1f1; }
     .autocomplete-item:hover { background: #f8f9fa; color: #0d6efd; }
 
-    .store-preview-box { width: 100%; height: 200px; border: 2px dashed #4e73df; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: #fff; overflow: hidden; margin-top: 10px; }
-    .store-preview-box img { max-width: 100%; max-height: 100%; object-fit: cover; }
-    input, textarea, select { display: block; width: 100%; padding: 0.375rem 0.75rem; font-size: 0.9rem; border: 1px solid #ced4da; border-radius: 0.25rem; }
+    /* Gallery Pro Style - Store Edition */
+    .upload-box {
+        border: 2px dashed #cbd5e0; border-radius: 15px; background: #f8fafc;
+        position: relative; transition: all 0.3s ease; display: flex;
+        flex-direction: column; align-items: center; justify-content: center;
+        overflow: hidden; cursor: pointer; text-align: center;
+    }
+    .upload-box:hover { border-color: #1cc88a; background: #f0fff4; }
+    .main-upload { height: 300px; }
+    .sub-upload { height: 145px; }
+    .preview-img { width: 100%; height: 100%; object-fit: cover; border-radius: 12px; }
+    .upload-placeholder { color: #a0aec0; }
+
+    /* Quill Editor Style */
+    #editor-container { height: 400px; background: white; border-bottom-left-radius: 15px; border-bottom-right-radius: 15px; }
+    .ql-toolbar { border-top-left-radius: 15px; border-top-right-radius: 15px; background: #f8f9fa; }
+
+    input, textarea, select { display: block; width: 100%; padding: 0.5rem 0.75rem; font-size: 0.9rem; border: 1px solid #ced4da; border-radius: 10px; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container mt-4 mb-5 text-dark">
-    <div class="card shadow-lg border-0">
+    <div class="card shadow-lg border-0" style="border-radius: 20px; overflow: hidden;">
         <div class="card-header bg-success text-white py-3">
             <h4 class="mb-0 fw-bold"><i class="fa-solid fa-store me-2"></i> {{ title }}</h4>
         </div>
-        <div class="card-body p-4">
-            <form method="POST" enctype="multipart/form-data">
+        <div class="card-body p-4 bg-light">
+            <form id="storeForm" method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
-                <div class="row">
-                    <div class="col-md-5">
-                        <h5 class="fw-bold mb-4 border-bottom pb-2 text-primary"><i class="fa-solid fa-pen-to-square me-2"></i>Thông tin chi tiết</h5>
+                
+                <div class="row g-4 mb-5">
+                    <div class="col-lg-5">
+                        <h5 class="fw-bold mb-3 text-success border-bottom pb-2"><i class="fa-solid fa-circle-info me-2"></i>Thông tin chi nhánh</h5>
                         
                         <div class="mb-3">
                             <label class="form-label">Tên cửa hàng</label>
@@ -52,7 +66,7 @@
                             {{ form.address }}
                             <div id="address-results" class="autocomplete-results shadow-sm"></div>
                             <button type="button" id="btn-find-on-map" class="btn btn-primary btn-sm w-100 mt-2 rounded-pill fw-bold shadow-sm">
-                                <i class="fa-solid fa-magnifying-glass-location me-2"></i>Tìm địa điểm trên bản đồ
+                                <i class="fa-solid fa-magnifying-glass-location me-2"></i>Tìm địa điểm này
                             </button>
                         </div>
 
@@ -67,35 +81,63 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Hình ảnh cửa hàng</label>
-                            <input type="file" name="image" class="form-control" onchange="previewStoreImage(event)">
-                            <div class="store-preview-box">
-                                <img id="store_preview" src="{% if form.instance.image %}{{ form.instance.image.url }}{% else %}https://via.placeholder.com/400x200?text=ONEWAY+Store{% endif %}">
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Mô tả tóm tắt</label>
-                            {{ form.description }}
-                        </div>
-
-                        <div class="mb-3">
                             <label class="form-label text-danger fw-bold">Tọa độ GIS (POINT)</label>
                             {{ form.location }}
                         </div>
-                        
-                        <div class="d-grid gap-2 mt-4">
-                            <button type="submit" class="btn btn-success fw-bold btn-lg shadow-sm">
-                                <i class="fa-solid fa-floppy-disk me-2"></i> LƯU STORE
-                            </button>
-                            <a href="{% url 'custom_admin_dashboard' %}" class="btn btn-outline-secondary">Hủy bỏ</a>
-                        </div>
                     </div>
 
-                    <div class="col-md-7">
-                        <h5 class="fw-bold mb-3"><i class="fa-solid fa-map-location-dot me-2"></i>Vị trí thực tế</h5>
+                    <div class="col-lg-7">
+                        <h5 class="fw-bold mb-3 text-success border-bottom pb-2"><i class="fa-solid fa-map-location-dot me-2"></i>Vị trí thực tế</h5>
                         <div id="map" class="shadow"></div>
                     </div>
+                </div>
+
+                <div class="mt-5">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold text-success mb-0"><i class="fa-solid fa-images me-2"></i>HÌNH ẢNH CHI NHÁNH</h5>
+                        <span class="badge bg-success text-white rounded-pill px-3 py-2">Mẹo: Chọn 5 ảnh ở ô chính để tải nhanh</span>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-lg-7">
+                            <div class="upload-box main-upload" onclick="document.getElementById('input-1').click()">
+                                <img id="pre-1" src="{% if form.instance.image %}{{ form.instance.image.url }}{% endif %}" class="preview-img" {% if not form.instance.image %}style="display:none;"{% endif %}>
+                                <div id="holder-1" class="upload-placeholder" {% if form.instance.image %}style="display:none;"{% endif %}>
+                                    <i class="fa-solid fa-camera-retro fa-3x"></i>
+                                    <p class="mt-2 fw-bold">Ảnh mặt tiền chi nhánh</p>
+                                </div>
+                                <input type="file" name="image" id="input-1" hidden multiple onchange="handleStoreBulkGallery(this)">
+                            </div>
+                        </div>
+                        <div class="col-lg-5">
+                            <div class="row g-2">
+                                {% for i in "2345" %}
+                                <div class="col-6">
+                                    <div class="upload-box sub-upload" onclick="document.getElementById('input-{{i}}').click()">
+                                        {% if i == "2" %}{% if form.instance.image_2 %}<img id="pre-2" src="{{ form.instance.image_2.url }}" class="preview-img">{% else %}<img id="pre-2" class="preview-img" style="display:none;"><div id="holder-2" class="upload-placeholder"><i class="fa-solid fa-plus"></i><p class="small mb-0">Ảnh 2</p></div>{% endif %}{% endif %}
+                                        {% if i == "3" %}{% if form.instance.image_3 %}<img id="pre-3" src="{{ form.instance.image_3.url }}" class="preview-img">{% else %}<img id="pre-3" class="preview-img" style="display:none;"><div id="holder-3" class="upload-placeholder"><i class="fa-solid fa-plus"></i><p class="small mb-0">Ảnh 3</p></div>{% endif %}{% endif %}
+                                        {% if i == "4" %}{% if form.instance.image_4 %}<img id="pre-4" src="{{ form.instance.image_4.url }}" class="preview-img">{% else %}<img id="pre-4" class="preview-img" style="display:none;"><div id="holder-4" class="upload-placeholder"><i class="fa-solid fa-plus"></i><p class="small mb-0">Ảnh 4</p></div>{% endif %}{% endif %}
+                                        {% if i == "5" %}{% if form.instance.image_5 %}<img id="pre-5" src="{{ form.instance.image_5.url }}" class="preview-img">{% else %}<img id="pre-5" class="preview-img" style="display:none;"><div id="holder-5" class="upload-placeholder"><i class="fa-solid fa-plus"></i><p class="small mb-0">Ảnh 5</p></div>{% endif %}{% endif %}
+                                        
+                                        <input type="file" name="image_{{i}}" id="input-{{i}}" hidden onchange="previewSingle(this, {{i}})">
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-5">
+                    <h5 class="fw-bold text-success mb-3 border-bottom pb-2"><i class="fa-solid fa-pen-nib me-2"></i>GIỚI THIỆU CHI TIẾT</h5>
+                    <div id="editor-container"></div>
+                    <input type="hidden" name="description" id="store_desc_input" value="{{ form.instance.description }}">
+                </div>
+
+                <div class="d-grid gap-2 mt-5">
+                    <button type="submit" class="btn btn-success fw-bold btn-lg shadow rounded-pill py-3">
+                        <i class="fa-solid fa-floppy-disk me-2"></i> XÁC NHẬN LƯU STORE
+                    </button>
+                    <a href="{% url 'custom_admin_dashboard' %}" class="btn btn-link text-secondary text-decoration-none">Hủy bỏ</a>
                 </div>
             </form>
         </div>
@@ -105,20 +147,12 @@
 
 {% block extra_js %}
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 <script>
     const GOONG_API_KEY = "4wc1mFYLefdK6o9zD6eo5HQuvfuJTZfsNXmUAYEk";
 
-    function previewStoreImage(event) {
-        const file = event.target.files[0];
-        const preview = document.getElementById('store_preview');
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) { preview.src = e.target.result; }
-            reader.readAsDataURL(file);
-        }
-    }
-
     document.addEventListener('DOMContentLoaded', function() {
+        // --- 1. KHỞI TẠO BẢN ĐỒ ---
         var map = L.map('map').setView([10.762622, 106.660172], 13);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map);
 
@@ -128,7 +162,10 @@
         var resultsBox = document.getElementById('address-results');
 
         function updateMarker(lat, lng, moveMap = true) {
-            if (locationInput) locationInput.value = `POINT (${lng} ${lat})`;
+            if (!locationInput) return;
+            // WKT chuẩn cho PostGIS
+            locationInput.value = `SRID=4326;POINT(${lng} ${lat})`; 
+            
             if (marker) {
                 marker.setLatLng([lat, lng]);
             } else {
@@ -141,13 +178,93 @@
             if (moveMap) map.flyTo([lat, lng], 17);
         }
 
-        // --- LOGIC AUTOCOMPLETE GIỐNG MAP.HTML ---
+        // --- 2. TRỊ BỆNH NHẢY MARKER (Lấy 2 số cuối cùng) ---
+        if (locationInput && locationInput.value) {
+            var m = locationInput.value.match(/-?\d+\.?\d*/g);
+            if (m && m.length >= 2) {
+                // Lấy lat từ phần tử cuối, lng từ phần tử áp chót để né số 4326
+                var lat = parseFloat(m[m.length - 1]);
+                var lng = parseFloat(m[m.length - 2]);
+                updateMarker(lat, lng);
+            }
+        }
+
+        // --- 3. QUILL EDITOR VỚI MULTI-IMAGE ICON ---
+        var quill = new Quill('#editor-container', {
+            modules: { toolbar: [[{'header': [1, 2, false]}], ['bold', 'italic', 'underline'], [{'list': 'ordered'}, {'list': 'bullet'}], ['link', 'image']] },
+            placeholder: 'Viết nội dung giới thiệu chi nhánh...',
+            theme: 'snow'
+        });
+        quill.root.innerHTML = document.getElementById('store_desc_input').value;
+
+        // Custom image handler
+        const toolbar = quill.getModule('toolbar');
+        toolbar.addHandler('image', function() {
+            const input = document.createElement('input');
+            input.setAttribute('type', 'file');
+            input.setAttribute('multiple', ''); 
+            input.click();
+            input.onchange = () => {
+                const files = input.files;
+                let range = quill.getSelection();
+                let index = range ? range.index : quill.getLength();
+                Array.from(files).forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        quill.insertEmbed(index, 'image', e.target.result);
+                        quill.insertText(index + 1, '\n');
+                        index += 2;
+                    };
+                    reader.readAsDataURL(file);
+                });
+            };
+        });
+
+        // --- 4. GALLERY HÀNG LOẠT ---
+        window.handleStoreBulkGallery = function(input) {
+            const files = input.files;
+            if (!files) return;
+            for (let i = 0; i < Math.min(files.length, 5); i++) {
+                const file = files[i];
+                const reader = new FileReader();
+                const slotId = i + 1;
+                reader.onload = function(e) {
+                    const img = document.getElementById('pre-' + slotId);
+                    const holder = document.getElementById('holder-' + slotId);
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                    if(holder) holder.style.display = 'none';
+
+                    if (slotId > 1) {
+                        const targetInput = document.getElementById('input-' + slotId);
+                        const dt = new DataTransfer();
+                        dt.items.add(file);
+                        targetInput.files = dt.files;
+                    }
+                }
+                reader.readAsDataURL(file);
+            }
+        };
+
+        window.previewSingle = function(input, id) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('pre-' + id).src = e.target.result;
+                    document.getElementById('pre-' + id).style.display = 'block';
+                    const h = document.getElementById('holder-' + id);
+                    if(h) h.style.display = 'none';
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        };
+
+        // --- 5. LOGIC AUTOCOMPLETE ---
         let timeout = null;
         addressInput.addEventListener('input', function() {
             clearTimeout(timeout);
             const query = this.value;
             if (query.length < 2) { resultsBox.style.display = 'none'; return; }
-
             timeout = setTimeout(() => {
                 fetch(`https://rsapi.goong.io/Place/Autocomplete?api_key=${GOONG_API_KEY}&input=${encodeURIComponent(query)}`)
                     .then(res => res.json())
@@ -162,8 +279,6 @@
                                 div.onclick = async function() {
                                     addressInput.value = item.description;
                                     resultsBox.style.display = 'none';
-                                    
-                                    // Lấy chi tiết tọa độ từ Place Detail API (giống map.html)
                                     const detailRes = await fetch(`https://rsapi.goong.io/Place/Detail?api_key=${GOONG_API_KEY}&place_id=${item.place_id}`);
                                     const detailData = await detailRes.json();
                                     if (detailData.result) {
@@ -178,48 +293,43 @@
             }, 300);
         });
 
-        // Nút tìm nhanh theo địa chỉ trong ô input
-        document.getElementById('btn-find-on-map').addEventListener('click', function() {
-            addressInput.dispatchEvent(new Event('input'));
-        });
+        // Submit form
+        document.getElementById('storeForm').onsubmit = function() {
+            document.getElementById('store_desc_input').value = quill.root.innerHTML;
+            return true;
+        };
 
-        // Click map lấy tọa độ
         map.on('click', function(e) { updateMarker(e.latlng.lat, e.latlng.lng, false); });
-
-        // Load tọa độ cũ
-        if (locationInput && locationInput.value) {
-            var m = locationInput.value.match(/-?\d+\.?\d*/g);
-            if (m && m.length >= 2) {
-                updateMarker(parseFloat(m[1]), parseFloat(m[0]));
-            }
-        }
-
-        document.addEventListener('click', (e) => { if (e.target !== addressInput) resultsBox.style.display = 'none'; });
+        document.getElementById('btn-find-on-map').addEventListener('click', () => addressInput.dispatchEvent(new Event('input')));
+        
+        // Sửa lỗi xám màn hình bản đồ
         setTimeout(() => { map.invalidateSize(); }, 600);
     });
-    function updateMarker(lat, lng, moveMap = true) {
-    if (!locationInput) return;
-
-    // Đảm bảo lat và lng là số thực, không phải null hay undefined
-    if (isNaN(lat) || isNaN(lng)) {
-        console.error("Tọa độ không hợp lệ!");
-        return;
-    }
-
-    // Cú pháp WKT chuẩn: POINT(lng lat) - Không có dấu cách dư thừa
-    // Thêm SRID=4326 để GDAL nhận diện chính xác hệ tọa độ
-    locationInput.value = `SRID=4326;POINT(${lng} ${lat})`; 
     
-    if (marker) {
-        marker.setLatLng([lat, lng]);
-    } else {
-        marker = L.marker([lat, lng], {draggable: true}).addTo(map);
-        marker.on('dragend', function() {
-            var p = marker.getLatLng();
-            updateMarker(p.lat, p.lng, false);
+    // --- THIẾT QUÂN LUẬT: GIỚI HẠN GIỜ MỞ CỬA CHỈ TRONG BUỔI SÁNG (AM) ---
+    var openingTimeInput = document.querySelector('[name="opening_time"]');
+
+    if (openingTimeInput) {
+        // 1. Ép trình duyệt chặn chọn giờ PM (Nếu trình duyệt hỗ trợ thuộc tính max)
+        openingTimeInput.setAttribute('max', '11:59');
+
+        // 2. Kiểm tra gắt gao: Nếu người dùng cố tình nhập giờ PM, trẫm sẽ tự động đưa về AM
+        openingTimeInput.addEventListener('change', function() {
+            var timeValue = this.value; // Giá trị thường là "HH:mm" (24h)
+            if (timeValue) {
+                var hours = parseInt(timeValue.split(':')[0]);
+                
+                // Nếu giờ >= 12 (tức là đã sang PM)
+                if (hours >= 12) {
+                    alert("Bẩm đại vương, giờ mở cửa chỉ được phép chọn buổi sáng (AM)! Hệ thống đã tự động điều chỉnh lại.");
+                    // Đưa về 08:00 hoặc giữ nguyên số phút nhưng đổi giờ thành AM (ví dụ 13:00 -> 01:00)
+                    var newHours = hours % 12;
+                    var minutes = timeValue.split(':')[1];
+                    this.value = (newHours < 10 ? '0' + newHours : newHours) + ':' + minutes;
+                }
+            }
         });
     }
-    if (moveMap) map.flyTo([lat, lng], 17);
-}
+
 </script>
 {% endblock %}

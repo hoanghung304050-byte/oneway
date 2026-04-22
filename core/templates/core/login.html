@@ -35,9 +35,8 @@
                         <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-bold shadow-sm mb-3">
                             <i class="fa-solid fa-right-to-bracket me-2"></i> ĐĂNG NHẬP NGAY
                         </button>
-
                         <div class="text-center">
-                            <span class="small text-muted">Chưa có tài khoản?</span>
+                            <a href="{% url 'forgot_password_otp' %}" class="text-decoration-none small text-muted">Quên mật khẩu?</a>
                             <a href="{% url 'register' %}" class="small fw-bold text-decoration-none text-primary">Đăng ký ngay tại đây</a>
                         </div>
                     </form>

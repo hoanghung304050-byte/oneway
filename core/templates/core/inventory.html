@@ -1,0 +1,28 @@
+<div class="container mt-5">
+    <h2 class="fw-bold mb-4">Quản lý Xuất/Nhập kho</h2>
+    
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <div class="card p-4 shadow-sm h-100">
+                <h5 class="fw-bold text-primary"><i class="fa-solid fa-download"></i> Xuất dữ liệu kho</h5>
+                <p class="text-muted">Tải toàn bộ danh sách sản phẩm và số lượng tồn kho hiện tại xuống file Excel.</p>
+                <a href="{% url 'export_inventory_excel' %}" class="btn btn-outline-primary mt-auto">
+                    Tải file Excel ngay
+                </a>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <div class="card p-4 shadow-sm h-100">
+                <h5 class="fw-bold text-success"><i class="fa-solid fa-upload"></i> Nhập kho hàng loạt</h5>
+                <p class="text-muted">Upload file Excel có chứa 2 cột bắt buộc: <b>Mã SP</b> và <b>Số lượng nhập</b>.</p>
+                
+                <form action="{% url 'inventory_management' %}" method="POST" enctype="multipart/form-data" class="mt-auto">
+                    {% csrf_token %}
+                    <input class="form-control mb-3" type="file" name="excel_file" accept=".xlsx, .xls" required>
+                    <button type="submit" class="btn btn-success w-100">Cập nhật vào hệ thống</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

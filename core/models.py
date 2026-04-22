@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from decimal import Decimal
 import uuid # Để tạo mã đơn hàng tự động
+from ckeditor_uploader.fields import RichTextUploadingField
 
 # ==========================================
 # 1. SẢN PHẨM & PHÂN LOẠI
@@ -20,7 +21,6 @@ class Product(models.Model):
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='phone', verbose_name="Loại sản phẩm")
     brand = models.CharField(max_length=50, null=True, blank=True, verbose_name="Thương hiệu")
     
-    
     # Ảnh sản phẩm
     image = models.ImageField(upload_to='products/', null=True, blank=True)
     image_2 = models.ImageField(upload_to='products/', null=True, blank=True)
@@ -28,7 +28,10 @@ class Product(models.Model):
     image_4 = models.ImageField(upload_to='products/', null=True, blank=True)
     image_5 = models.ImageField(upload_to='products/', null=True, blank=True)
     
-    description = models.TextField(null=True, blank=True)
+    # ĐÃ SỬA: Thay đổi TextField thành RichTextUploadingField
+    description = RichTextUploadingField(verbose_name="Mô tả chi tiết", null=True, blank=True)
+    
+    # (Tùy chọn) Đại vương có thể xóa dòng này nếu không cần ảnh mô tả riêng lẻ nữa
     desc_image = models.ImageField(upload_to='products/desc/', null=True, blank=True)
 
     @property
@@ -48,19 +51,25 @@ class Store(models.Model):
     name = models.CharField(max_length=200)
     address = models.CharField(max_length=500)
     phone = models.CharField(max_length=20, blank=True, null=True)
-    description = models.TextField(blank=True, null=True)
+    
+    # ĐÃ SỬA: Nâng cấp lên RichTextUploadingField để chèn nhiều ảnh và định dạng chữ
+    description = RichTextUploadingField(verbose_name="Mô tả chi tiết", blank=True, null=True)
+    
     opening_time = models.TimeField(null=True, blank=True)
     closing_time = models.TimeField(null=True, blank=True)
     rating = models.FloatField(default=5.0)
-    image = models.ImageField(upload_to='stores/', blank=True, null=True)
+    
     location = models.PointField(srid=4326) # Tọa độ gốc GIS
     lat = models.FloatField(null=True, blank=True)
     lng = models.FloatField(null=True, blank=True)
 
+    # ĐÃ SỬA: Xóa bỏ 1 trường 'image' bị trùng lặp phía trên, gộp lại cho gọn
     image = models.ImageField(upload_to='stores/', blank=True, null=True, verbose_name="Ảnh chính")
     image_2 = models.ImageField(upload_to='stores/', blank=True, null=True, verbose_name="Ảnh Poster 2")
     image_3 = models.ImageField(upload_to='stores/', blank=True, null=True, verbose_name="Ảnh Poster 3")
-    promotion_text = models.TextField(blank=True, null=True, verbose_name="Chương trình ưu đãi")
+    
+    # Lưu ý nhỏ: Ngài có thể đổi trường này thành RichTextUploadingField luôn nếu muốn viết ưu đãi có màu sắc nổi bật
+    promotion_text = RichTextUploadingField(blank=True, null=True, verbose_name="Chương trình ưu đãi")
 
     manager = models.OneToOneField(
         User, 
@@ -171,3 +180,6 @@ class Review(models.Model):
     rating = models.IntegerField(default=5)
     comment = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        unique_together = ('user', 'product')
+        

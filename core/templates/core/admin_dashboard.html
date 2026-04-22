@@ -1,22 +1,75 @@
-{% extends 'core/home.html' %}
+{% extends 'core/base.html' %}
 {% load humanize %}
 
 {% block extra_css %}
 <style>
-    :root { --sidebar-width: 250px; --accent-color: #0d6efd; --bg-admin: #f4f7fa; }
+    :root { --sidebar-width: 260px; --accent-color: #0d6efd; --bg-admin: #f4f7fa; }
+    
+    /* Ẩn navbar và footer của trang chủ để không vướng Admin */
     nav.navbar, footer { display: none !important; }
-    body { background-color: var(--bg-admin); }
-    .admin-container { display: flex; min-height: 100vh; }
-    .sidebar { width: var(--sidebar-width); background: white; border-right: 1px solid #e3e6f0; position: fixed; height: 100vh; z-index: 1000; padding-top: 20px; }
+    body { background-color: var(--bg-admin); overflow-x: hidden; }
+    
+    /* BỎ display: flex ĐỂ KHÔNG BỊ LỖI KHOẢNG TRẮNG BÊN TRÁI */
+    .admin-container { 
+        display: block; 
+        min-height: 100vh; 
+        width: 100%;
+    }
+
+    /* SIDEBAR CỐ ĐỊNH */
+    .sidebar { 
+        width: var(--sidebar-width); 
+        background: white; 
+        border-right: 1px solid #e3e6f0; 
+        position: fixed; 
+        top: 0;
+        left: 0;
+        height: 100vh; 
+        z-index: 1050; 
+        padding-top: 20px; 
+        transition: transform 0.3s ease-in-out;
+        overflow-y: auto;
+    }
+    
     .sidebar-brand { padding: 0 25px 20px; border-bottom: 1px solid #f8f9fa; margin-bottom: 10px; }
-    .sidebar .nav-link { padding: 12px 25px; color: #6e707e; font-weight: 500; display: flex; align-items: center; transition: all 0.2s; cursor: pointer; }
+    .sidebar .nav-link { padding: 12px 25px; color: #6e707e; font-weight: 500; display: flex; align-items: center; transition: all 0.2s; cursor: pointer; text-decoration: none; }
     .sidebar .nav-link i { width: 25px; margin-right: 10px; font-size: 1.1rem; }
     .sidebar .nav-link:hover { background: #f8f9fc; color: var(--accent-color); }
     .sidebar .nav-link.active { background: #eaecf4; color: var(--accent-color); border-right: 4px solid var(--accent-color); }
-    .main-content { flex: 1; margin-left: var(--sidebar-width); padding: 30px; }
+
+    /* NỘI DUNG CHÍNH (MAIN CONTENT) */
+    .main-content { 
+        margin-left: var(--sidebar-width); /* CÁCH LỀ ĐÚNG BẰNG SIDEBAR */
+        padding: 30px; 
+        transition: margin-left 0.3s ease; 
+        min-height: 100vh;
+    }
+
+    /* MOBILE GIAO DIỆN (Dưới 992px) */
+    @media (max-width: 991.98px) {
+        .sidebar {
+            transform: translateX(-100%); /* Giấu Sidebar */
+            box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar.active { transform: translateX(0); /* Hiện ra khi bấm nút */ }
+
+        .main-content {
+            margin-left: 0 !important; /* XÓA KHOẢNG TRẮNG TRÊN MOBILE */
+            padding: 15px;
+        }
+
+        .sidebar-overlay {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); z-index: 1040;
+        }
+        .sidebar-overlay.show { display: block; }
+    }
+
+    /* TRANG TRÍ CHUNG */
     .stat-card { border: none; border-radius: 15px; background: white; padding: 20px; box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.05); height: 100%; border-left: 5px solid var(--accent-color); }
     .table-card { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.05); margin-bottom: 30px; }
-    .scroll-area { max-height: 400px; overflow-y: auto; border: 1px solid #f1f1f1; border-radius: 10px; }
+    .scroll-area { max-height: 450px; overflow-y: auto; border: 1px solid #f1f1f1; border-radius: 10px; }
     .table thead th { position: sticky; top: 0; background: #212529 !important; color: white; z-index: 10; font-size: 0.85rem; text-transform: uppercase; }
     .btn-circle { width: 35px; height: 35px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; }
     .admin-section { animation: fadeIn 0.4s ease-in-out; }
@@ -24,45 +77,52 @@
 </style>
 {% endblock %}
 
-{% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-{% endblock %}
-
 {% block content %}
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
 <div class="admin-container">
-    <div class="sidebar">
+    
+    <div class="sidebar" id="adminSidebar">
         <div class="sidebar-brand">
             <h5 class="fw-bold text-primary mb-0"><i class="fa-solid fa-shield-halved"></i> ONEWAY ADMIN</h5>
         </div>
-    {% if is_manager %} 
-    <nav class="nav flex-column">
-    <a class="nav-link admin-nav-link active" onclick="showSection('section-stats', this)">
-        <i class="fa-solid fa-chart-simple"></i> Thống kê
-    </a>
-    <a class="nav-link admin-nav-link" onclick="showSection('section-orders', this)">
-        <i class="fa-solid fa-file-invoice"></i> Đơn hàng
-    </a>
-    <a class="nav-link admin-nav-link" onclick="showSection('section-products', this)">
-        <i class="fa-solid fa-box"></i> Sản phẩm
-    </a>
-        <a class="nav-link admin-nav-link" onclick="showSection('section-inventory', this)">
-        <i class="fa-solid fa-boxes-stacked"></i> Quản lý tồn kho
-    </a>
-    <a class="nav-link admin-nav-link" onclick="showSection('section-stores', this)">
-        <i class="fa-solid fa-map-location-dot"></i> Cửa hàng
-    </a>
-    <a class="nav-link admin-nav-link" onclick="showSection('section-users', this)">
-        <i class="fa-solid fa-users-gear"></i> Quản lý người dùng
-    </a>
-</nav>
+
+        {% if is_manager %} 
+        <nav class="nav flex-column">
+            <a class="nav-link admin-nav-link active" onclick="showSection('section-stats', this)">
+                <i class="fa-solid fa-chart-simple"></i> Thống kê
+            </a>
+            <a class="nav-link admin-nav-link" onclick="showSection('section-orders', this)">
+                <i class="fa-solid fa-file-invoice"></i> Đơn hàng
+            </a>
+            <a class="nav-link admin-nav-link" onclick="showSection('section-products', this)">
+                <i class="fa-solid fa-box"></i> Sản phẩm
+            </a>
+            <a class="nav-link admin-nav-link" onclick="showSection('section-inventory', this)">
+                <i class="fa-solid fa-boxes-stacked"></i> Quản lý tồn kho
+            </a>
+            <a class="nav-link admin-nav-link" onclick="showSection('section-stores', this)">
+                <i class="fa-solid fa-map-location-dot"></i> Cửa hàng
+            </a>
+            <a class="nav-link admin-nav-link" onclick="showSection('section-users', this)">
+                <i class="fa-solid fa-users-gear"></i> Quản lý người dùng
+            </a>
+        </nav>
+        {% endif %}
+        
         <hr class="mx-3 my-3 border-secondary opacity-25">
-        <a class="nav-link text-danger fw-bold" href="{% url 'home' %}">
+        <a class="nav-link text-danger fw-bold" href="{% url 'home' %}" style="padding-left: 25px;">
             <i class="fa-solid fa-arrow-left-long me-2"></i> QUAY LẠI TRANG WEB
         </a>
-    </nav>
-</div>
+    </div>
 
     <div class="main-content">
+        <div class="d-lg-none mb-3">
+            <button class="btn btn-dark w-100 fw-bold" id="btnToggleSidebar">
+                <i class="fa-solid fa-bars me-2"></i> MENU QUẢN TRỊ
+            </button>
+        </div>
+
         <div id="section-stats" class="admin-section">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h3 class="fw-bold text-gray-800">Bảng Điều Khiển Quản Trị</h3>
@@ -132,6 +192,36 @@
             </div>
         </div>
 
+                <div id="section-products" class="admin-section" style="display: none;">
+            <div class="table-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0"><i class="fa-solid fa-mobile-screen text-primary me-2"></i>Danh sách Sản Phẩm</h5>
+                    <a href="{% url 'admin_add_product' %}" class="btn btn-primary btn-sm rounded-pill px-3">+ Thêm mới</a>
+                </div>
+                <div class="scroll-area">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr><th>ID</th><th>Ảnh</th><th>Tên sản phẩm</th><th>Giá</th><th>Hành động</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for product in products %}
+                            <tr>
+                                <td>{{ product.id }}</td>
+                                <td><img src="{{ product.image_url }}" width="40" class="rounded shadow-sm"></td>
+                                <td class="fw-bold">{{ product.name }}</td>
+                                <td class="text-danger fw-bold">{{ product.price|intcomma }} ₫</td>
+                                <td>
+                                    <a href="{% url 'admin_edit_product' product.id %}" class="btn btn-sm btn-outline-warning btn-circle"><i class="fa-solid fa-pen"></i></a>
+                                    <a href="{% url 'admin_delete_product' product.id %}" class="btn btn-sm btn-outline-danger btn-circle" onclick="return confirm('Trảm sản phẩm này?')"><i class="fa-solid fa-trash"></i></a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <div id="section-inventory" class="admin-section" style="display: none;">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h3 class="fw-bold text-gray-800">
@@ -140,9 +230,36 @@
                 </h3>
             </div>
 
+            <div class="table-card mb-4 border-start border-success border-5 shadow-sm bg-light">
+                <div class="p-3">
+                    <h6 class="fw-bold text-success mb-3"><i class="fa-solid fa-file-excel me-2"></i> Cập nhật hàng loạt (Excel)</h6>
+                    <form action="{% url 'inventory_management' %}" method="POST" enctype="multipart/form-data" class="row g-2 align-items-end">
+                        {% csrf_token %}
+                        <div class="col-md-6">
+                            <label class="small fw-bold">Tải lên file Excel (.xlsx, .xls)</label>
+                            <input type="file" name="excel_file" class="form-control form-control-sm rounded-pill px-3" accept=".xlsx, .xls" required>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="submit" class="btn btn-success btn-sm w-100 rounded-pill fw-bold">
+                                <i class="fa-solid fa-upload"></i> Nhập kho
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'export_inventory_excel' %}" class="btn btn-outline-success btn-sm w-100 rounded-pill fw-bold">
+                                <i class="fa-solid fa-download"></i> Tải DB về máy
+                            </a>
+                        </div>
+                    </form>
+                    <div class="mt-2 text-muted" style="font-size: 0.8rem;">
+                        * File Excel cần có cột <b>Mã SP</b> và <b>Số lượng mới</b>. 
+                        {% if is_super %}Admin tổng cần thêm cột <b>Mã Chi Nhánh</b>.{% endif %}
+                    </div>
+                </div>
+            </div>
+
             <div class="table-card mb-4 border-start border-info border-5 shadow-sm bg-light">
                 <div class="p-3">
-                    <h6 class="fw-bold text-info mb-3"><i class="fa-solid fa-plus-circle me-2"></i> Cập nhật số lượng kho</h6>
+                    <h6 class="fw-bold text-info mb-3"><i class="fa-solid fa-plus-circle me-2"></i> Cập nhật thủ công</h6>
                     <form action="{% url 'update_stock' %}" method="POST" class="row g-2 align-items-end">
                         {% csrf_token %}
                         {% if is_super %}
@@ -154,17 +271,20 @@
                             </select>
                         </div>
                         {% endif %}
-                        <div class="col-md-4">
+                        
+                        <div class="{% if is_super %}col-md-4{% else %}col-md-7{% endif %}">
                             <label class="small fw-bold">Chọn sản phẩm</label>
                             <select name="product_id" class="form-select form-select-sm rounded-pill px-3" required>
                                 <option value="">-- Sản phẩm --</option>
                                 {% for p in products %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}
                             </select>
                         </div>
+                        
                         <div class="col-md-3">
                             <label class="small fw-bold">Số lượng mới</label>
                             <input type="number" name="quantity" class="form-control form-control-sm rounded-pill px-3" placeholder="Ví dụ: 50" required>
                         </div>
+                        
                         <div class="col-md-2">
                             <button type="submit" class="btn btn-dark btn-sm w-100 rounded-pill fw-bold">Xác nhận</button>
                         </div>
@@ -227,84 +347,8 @@
                     </table>
                 </div>
             </div>
-        </div>
-        </div>
+        </div> 
 
-        <div id="section-products" class="admin-section" style="display: none;">
-            <div class="table-card shadow-sm border-0">
-                <div class="row align-items-center mb-4">
-                    <div class="col-md-4">
-                        <h5 class="fw-bold mb-0"><i class="fa-solid fa-box text-primary me-2"></i>Sản Phẩm</h5>
-                    </div>
-                    <div class="col-md-5">
-                        <form method="GET" class="input-group input-group-sm">
-                            <input type="text" name="search_product" class="form-control rounded-start-pill px-3" 
-                                placeholder="Tìm tên hoặc mã SP..." value="{{ q_prod }}">
-                            <button class="btn btn-primary rounded-end-pill px-3" type="submit">
-                                <i class="fa-solid fa-magnifying-glass"></i>
-                            </button>
-                        </form>
-                    </div>
-                    <div class="col-md-3 text-end">
-                        {% if is_manager %}
-                        <a href="{% url 'admin_add_product' %}" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm">+ Thêm mới</a>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div class="scroll-area">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-dark">
-                            <tr><th>ID</th><th>Ảnh</th><th>Tên sản phẩm</th><th>Giá</th><th class="text-center">Hành động</th></tr>
-                        </thead>
-                        <tbody>
-                            {% for product in products %}
-                            <tr>
-                                <td><small class="text-muted">#{{ product.id }}</small></td>
-                                <td><img src="{{ product.image_url }}" width="40" height="40" class="rounded shadow-sm object-fit-cover"></td>
-                                <td class="fw-bold">{{ product.name }}</td>
-                                <td class="text-danger fw-bold">{{ product.price|intcomma }} ₫</td>
-                                <td class="text-center">
-                                    {% if is_manager %}
-                                        <a href="{% url 'admin_edit_product' product.id %}" class="btn btn-sm btn-outline-warning btn-circle me-1"><i class="fa-solid fa-pen"></i></a>
-                                        <a href="{% url 'admin_delete_product' product.id %}" class="btn btn-sm btn-outline-danger btn-circle" onclick="return confirm('Trảm sản phẩm này?')"><i class="fa-solid fa-trash"></i></a>
-                                    {% else %}
-                                        <span class="badge bg-light text-muted border small"><i class="fa-solid fa-eye me-1"></i>Chỉ xem</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr><td colspan="5" class="text-center py-4 text-muted">Không tìm thấy sản phẩm nào phù hợp.</td></tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div id="section-stores" class="admin-section" style="display: none;">
-            <div class="table-card">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold mb-0"><i class="fa-solid fa-map-location-dot text-success me-2"></i>Hệ thống Cửa Hàng (GIS)</h5>
-                    <a href="{% url 'admin_add_store' %}" class="btn btn-success btn-sm rounded-pill px-3">+ Thêm Store</a>
-                </div>
-                <div class="scroll-area">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead><tr><th>ID</th><th>Tên</th><th>Địa chỉ</th><th>Hành động</th></tr></thead>
-                        <tbody>
-                            {% for store in stores %}
-                            <tr>
-                                <td>{{ store.id }}</td>
-                                <td class="fw-bold text-success">{{ store.name }}</td>
-                                <td class="small">{{ store.address }}</td>
-                                <td><a href="{% url 'admin_edit_store' store.id %}" class="btn btn-sm btn-outline-warning btn-circle"><i class="fa-solid fa-pen"></i></a></td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
 
         <div id="section-orders" class="admin-section" style="display: none;">
             <div class="table-card shadow-sm border-0">
@@ -349,6 +393,146 @@
             </div>
         </div>
 
+        <div id="section-stores" class="admin-section" style="display: none;">
+            <div class="table-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0"><i class="fa-solid fa-map-location-dot text-success me-2"></i>Hệ thống Cửa Hàng (GIS)</h5>
+                    <a href="{% url 'admin_add_store' %}" class="btn btn-success btn-sm rounded-pill px-3">+ Thêm Store</a>
+                </div>
+                <div class="scroll-area">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-dark"><tr><th>ID</th><th>Tên</th><th>Địa chỉ</th><th>Hành động</th></tr></thead>
+                        <tbody>
+                            {% for store in stores %}
+                            <tr>
+                                <td>{{ store.id }}</td>
+                                <td class="fw-bold text-success">{{ store.name }}</td>
+                                <td class="small">{{ store.address }}</td>
+                                <td>
+                                    <a href="{% url 'admin_edit_store' store.id %}" class="btn btn-sm btn-outline-warning btn-circle me-1" title="Chỉnh sửa">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </a>
+                                    
+                                    {% if is_super %}
+                                    <a href="{% url 'admin_delete_store' store.id %}" class="btn btn-sm btn-outline-danger btn-circle shadow-sm" 
+                                    onclick="return confirm('⚠️ Cảnh báo: Đại vương có chắc chắn muốn san bằng chi nhánh {{ store.name }} này không? Dữ liệu tồn kho tại đây cũng sẽ bay màu đấy!');" title="Xóa chi nhánh">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        {% if is_super %}
+        <div id="section-users" class="admin-section" style="display: none;">
+            <div class="table-card shadow-sm border-0 mb-5">
+                <div class="row align-items-center mb-4">
+                    <div class="col-md-4">
+                        <h5 class="fw-bold mb-0 text-dark">
+                            <i class="fa-solid fa-users-gear text-info me-2"></i>Thành Viên Hệ Thống
+                        </h5>
+                    </div>
+                    <div class="col-md-8">
+                        <form method="GET" class="input-group input-group-sm ms-auto" style="max-width: 400px;">
+                            <input type="text" name="search_user" class="form-control rounded-start-pill px-3" 
+                                   placeholder="Tìm Username hoặc Email..." value="{{ q_user }}">
+                            <button class="btn btn-info text-white rounded-end-pill px-3" type="submit">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="scroll-area">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Chức vụ hiện tại</th>
+                                <th class="text-center">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u in users %}
+                            <tr>
+                                <td class="fw-bold">{{ u.username }}</td>
+                                <td class="small text-muted">{{ u.email }}</td>
+                                <td>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-primary dropdown-toggle rounded-pill px-3 shadow-sm" type="button" data-bs-toggle="dropdown">
+                                            {% if u.is_superuser %}Siêu Quản Trị
+                                            {% elif u.is_staff and u.groups.all.0.name == 'NhanVien' %}Nhân Viên
+                                            {% elif u.is_staff %}Quản Lý
+                                            {% else %}Khách Hàng{% endif %}
+                                        </button>
+                                        <ul class="dropdown-menu shadow border-0">
+                                            <li><a class="dropdown-item" href="{% url 'change_user_role' u.id 'quanly' %}">Lên Quản Lý</a></li>
+                                            <li><a class="dropdown-item" href="{% url 'change_user_role' u.id 'nhanvien' %}">Lên Nhân Viên</a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item text-danger" href="{% url 'change_user_role' u.id 'khach' %}">Hạ xuống Khách</a></li>
+                                        </ul>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    {% if not u.is_superuser %}
+                                    <a href="{% url 'delete_user' u.id %}" class="btn btn-sm btn-outline-danger btn-circle" onclick="return confirm('Xóa vĩnh viễn người dùng này?')">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </a>
+                                    {% else %}
+                                    <i class="fa-solid fa-lock text-muted"></i>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="table-card border-start border-primary border-5 shadow-sm" id="dieu-dong-nhan-su">
+                <h5 class="fw-bold text-primary mb-3">
+                    <i class="fa-solid fa-people-arrows me-2"></i>Điều động Quản lý chi nhánh
+                </h5>
+                <p class="text-muted small mb-4">
+                    <i class="fa-solid fa-circle-info me-1"></i> Lưu ý: Khi điều động, hệ thống sẽ tự động cập nhật vị trí mới cho nhân sự.
+                </p>
+                
+                <form action="{% url 'transfer_manager' %}" method="POST" class="row g-3 align-items-end">
+                    {% csrf_token %}
+                    <div class="col-md-5">
+                        <label class="form-label small fw-bold">Chọn nhân sự (Quản lý/Nhân viên)</label>
+                        <select name="user_id" class="form-select rounded-pill px-3" required>
+                            <option value="" selected disabled>-- Chọn người cần điều động --</option>
+                            {% for u in staff_users %}
+                            <option value="{{ u.id }}">{{ u.username }} (Hiện tại: {{ u.managed_store.name|default:"Chưa có" }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label small fw-bold">Chọn chi nhánh mới</label>
+                        <select name="store_id" class="form-select rounded-pill px-3" required>
+                            <option value="" selected disabled>-- Chọn chi nhánh đích --</option>
+                            {% for s in stores %}
+                            <option value="{{ s.id }}">{{ s.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold shadow-sm">
+                            Xác nhận
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+
         <div id="section-no-permission" class="admin-section" style="display: none;">
             <div class="card border-0 shadow-sm rounded-4 text-center py-5">
                 <div class="card-body">
@@ -371,209 +555,102 @@
             </div>
         </div>
 
-      {% if is_super %}
-<div id="section-users" class="admin-section" style="display: none;">
-    <div class="table-card shadow-sm border-0 mb-5">
-        <div class="row align-items-center mb-4">
-            <div class="col-md-4">
-                <h5 class="fw-bold mb-0 text-dark">
-                    <i class="fa-solid fa-users-gear text-info me-2"></i>Thành Viên Hệ Thống
-                </h5>
-            </div>
-            <div class="col-md-8">
-                <form method="GET" class="input-group input-group-sm ms-auto" style="max-width: 400px;">
-                    <input type="text" name="search_user" class="form-control rounded-start-pill px-3" 
-                           placeholder="Tìm Username hoặc Email..." value="{{ q_user }}">
-                    <button class="btn btn-info text-white rounded-end-pill px-3" type="submit">
-                        <i class="fa-solid fa-magnifying-glass"></i>
-                    </button>
-                </form>
-            </div>
-        </div>
-        
-        <div class="scroll-area">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Username</th>
-                        <th>Email</th>
-                        <th>Chức vụ hiện tại</th>
-                        <th class="text-center">Hành động</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for u in users %}
-                    <tr>
-                        <td class="fw-bold">{{ u.username }}</td>
-                        <td class="small text-muted">{{ u.email }}</td>
-                        <td>
-                            <div class="dropdown">
-                                <button class="btn btn-sm btn-outline-primary dropdown-toggle rounded-pill px-3 shadow-sm" type="button" data-bs-toggle="dropdown">
-                                    {% if u.is_superuser %}Siêu Quản Trị
-                                    {% elif u.is_staff and u.groups.all.0.name == 'NhanVien' %}Nhân Viên
-                                    {% elif u.is_staff %}Quản Lý
-                                    {% else %}Khách Hàng{% endif %}
-                                </button>
-                                <ul class="dropdown-menu shadow border-0">
-                                    <li><a class="dropdown-item" href="{% url 'change_user_role' u.id 'quanly' %}">Lên Quản Lý</a></li>
-                                    <li><a class="dropdown-item" href="{% url 'change_user_role' u.id 'nhanvien' %}">Lên Nhân Viên</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item text-danger" href="{% url 'change_user_role' u.id 'khach' %}">Hạ xuống Khách</a></li>
-                                </ul>
-                            </div>
-                        </td>
-                        <td class="text-center">
-                            {% if not u.is_superuser %}
-                            <a href="{% url 'delete_user' u.id %}" class="btn btn-sm btn-outline-danger btn-circle" onclick="return confirm('Xóa vĩnh viễn người dùng này?')">
-                                <i class="fa-solid fa-trash-can"></i>
-                            </a>
-                            {% else %}
-                            <i class="fa-solid fa-lock text-muted"></i>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
+    </div> </div> {% endblock %}
 
-    <div class="table-card border-start border-primary border-5 shadow-sm">
-        <h5 class="fw-bold text-primary mb-3">
-            <i class="fa-solid fa-people-arrows me-2"></i>Điều động Quản lý chi nhánh
-        </h5>
-        <p class="text-muted small mb-4">
-            <i class="fa-solid fa-circle-info me-1"></i> Lưu ý: Khi điều động, hệ thống sẽ tự động cập nhật vị trí mới cho nhân sự.
-        </p>
-        
-        <form action="{% url 'transfer_manager' %}" method="POST" class="row g-3 align-items-end">
-            {% csrf_token %}
-            <div class="col-md-5">
-                <label class="form-label small fw-bold">Chọn nhân sự (Quản lý/Nhân viên)</label>
-                <select name="user_id" class="form-select rounded-pill px-3" required>
-                    <option value="" selected disabled>-- Chọn người cần điều động --</option>
-                    {% for u in staff_users %}
-                    <option value="{{ u.id }}">{{ u.username }} (Hiện tại: {{ u.managed_store.name|default:"Chưa có" }})</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-5">
-                <label class="form-label small fw-bold">Chọn chi nhánh mới</label>
-                <select name="store_id" class="form-select rounded-pill px-3" required>
-                    <option value="" selected disabled>-- Chọn chi nhánh đích --</option>
-                    {% for s in stores %}
-                    <option value="{{ s.id }}">{{ s.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-2">
-                <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold shadow-sm">
-                    Xác nhận
-                </button>
-            </div>
-        </form>
-    </div>
-</div> 
-{% endif %}
-</div>
-
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+    // --- 1. HÀM CHUYỂN ĐỔI SECTION ---
     function showSection(sectionId, element) {
-        // Lấy thông tin quyền hạn từ Django (ép kiểu về boolean trong JS)
+        // Lấy thông tin quyền hạn từ Django
         const isSuper = {{ is_super|yesno:"true,false" }};
-        const isManager = {{ is_manager|yesno:"true,false" }};
-        const isStaffOnly = {{ is_staff_only|yesno:"true,false" }};
-
         let targetId = sectionId;
 
-        // --- LOGIC KIỂM TRA QUYỀN ---
-        
-        // 1. Chỉ Superuser mới được vào mục Người dùng và Cửa hàng
+        // Chỉ Superuser mới được vào mục Người dùng, Điều động và Cửa hàng
         if ((sectionId === 'section-users' || sectionId === 'section-stores') && !isSuper) {
             targetId = 'section-no-permission';
         }
 
-        // 2. Nhân viên (Staff Only) chỉ được xem Thống kê, Đơn hàng, Sản phẩm (Read-only đã xử lý ở bảng)
-        // Nếu ngài muốn chặn thêm mục nào với nhân viên thì thêm điều kiện ở đây.
-
-        // --- THỰC HIỆN HIỂN THỊ ---
-        
         // Ẩn tất cả các section
         document.querySelectorAll('.admin-section').forEach(sec => {
             sec.style.display = 'none';
         });
 
-        // Hiển thị section mục tiêu (hoặc section chặn)
+        // Hiển thị section mục tiêu
         const targetSection = document.getElementById(targetId);
         if (targetSection) {
             targetSection.style.display = 'block';
         }
 
-        // Cập nhật trạng thái Active cho Sidebar
+        // Cập nhật trạng thái Active cho thanh Menu
         document.querySelectorAll('.admin-nav-link').forEach(link => {
             link.classList.remove('active');
         });
-        element.classList.add('active');
+        if (element) {
+            element.classList.add('active');
+        }
+
+        // Trên Mobile: tự động đóng Menu sau khi ấn
+        if (window.innerWidth < 992) {
+            document.getElementById('adminSidebar').classList.remove('active');
+            document.getElementById('sidebarOverlay').classList.remove('show');
+        }
     }
 
+    // --- 2. LOGIC NÚT BẤM MENU VÀ BIỂU ĐỒ ---
     document.addEventListener('DOMContentLoaded', function() {
-        // --- 1. BIỂU ĐỒ HÔM NAY (BAR) ---
-        const ctxToday = document.getElementById('todayChart').getContext('2d');
-        new Chart(ctxToday, {
-            type: 'bar',
-            data: {
-                labels: {{ today_labels|safe }},
-                datasets: [{
-                    label: 'Đơn hàng theo giờ',
-                    data: {{ today_data|safe }},
-                    backgroundColor: 'rgba(13, 110, 253, 0.6)',
-                    borderRadius: 5
-                }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
-        });
+        const btn = document.getElementById('btnToggleSidebar');
+        const sidebar = document.getElementById('adminSidebar');
+        const overlay = document.getElementById('sidebarOverlay');
 
-        // --- 2. BIỂU ĐỒ 7 NGÀY (LINE) ---
-        const ctxWeek = document.getElementById('weekChart').getContext('2d');
-        new Chart(ctxWeek, {
-            type: 'line',
-            data: {
-                labels: {{ chart_labels|safe }},
-                datasets: [{
-                    label: 'Đơn hàng 7 ngày qua',
-                    data: {{ chart_data|safe }},
-                    borderColor: '#1cc88a',
-                    backgroundColor: 'rgba(28, 200, 138, 0.1)',
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 5
-                }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
-        });
+        if (btn && sidebar) {
+            btn.addEventListener('click', function() {
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('show');
+            });
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('show');
+            });
+        }
+
+        // Biểu đồ Hôm nay
+        const ctxToday = document.getElementById('todayChart');
+        if (ctxToday) {
+            new Chart(ctxToday.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: {{ today_labels|safe|default:"[]" }},
+                    datasets: [{
+                        label: 'Đơn hàng theo giờ',
+                        data: {{ today_data|safe|default:"[]" }},
+                        backgroundColor: 'rgba(13, 110, 253, 0.6)',
+                        borderRadius: 5
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        // Biểu đồ Tuần
+        const ctxWeek = document.getElementById('weekChart');
+        if (ctxWeek) {
+            new Chart(ctxWeek.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: {{ chart_labels|safe|default:"[]" }},
+                    datasets: [{
+                        label: 'Đơn hàng 7 ngày qua',
+                        data: {{ chart_data|safe|default:"[]" }},
+                        borderColor: '#1cc88a',
+                        backgroundColor: 'rgba(28, 200, 138, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
     });
-    // --- LOGIC KIỂM TRA QUYỀN MỚI ---
-    
-    // Chỉ Superuser mới được vào mục Người dùng, Cửa hàng và thực hiện Điều động
-    // Riêng Inventory thì Manager cũng được vào xem kho của họ.
-    if ((sectionId === 'section-users' || sectionId === 'section-stores') && !isSuper) {
-        targetId = 'section-no-permission';
-    }
-
-    // Thực hiện hiển thị (phần này giữ nguyên của ngài)
-    document.querySelectorAll('.admin-section').forEach(sec => {
-        sec.style.display = 'none';
-    });
-
-    const targetSection = document.getElementById(targetId);
-    if (targetSection) {
-        targetSection.style.display = 'block';
-    }
-
-    document.querySelectorAll('.admin-nav-link').forEach(link => {
-        link.classList.remove('active');
-    });
-    element.classList.add('active');
 </script>
-{% endif %}
 {% endblock %}

@@ -1,0 +1,142 @@
+{% extends 'core/base.html' %} 
+{% load humanize %}
+
+{% block extra_css %}
+<style>
+    /* 1. Reset nền và khoảng cách cho Mobile */
+    body { background-color: #f8f9fa; padding-bottom: 75px !important; }
+
+    /* 2. Horizontal Scroll cho Danh mục (Vuốt ngang mượt mà) */
+    .scroll-x {
+        display: flex; overflow-x: auto; white-space: nowrap; padding: 10px 0;
+        scrollbar-width: none; /* Ẩn scrollbar Firefox */
+    }
+    .scroll-x::-webkit-scrollbar { display: none; } /* Ẩn scrollbar Chrome/Safari */
+    
+    .category-chip {
+        padding: 8px 18px; background: #fff; border-radius: 20px; margin-right: 10px;
+        font-size: 0.85rem; border: 1px solid #dee2e6; color: #495057; text-decoration: none;
+        transition: all 0.2s;
+    }
+    .category-chip.active { background: #0d6efd; color: #fff; border-color: #0d6efd; font-weight: bold; }
+
+    /* 3. Thẻ sản phẩm Mobile (Thiết kế 2 cột chuẩn Shopee) */
+    .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 15px; }
+    .mobile-product-card {
+        background: #fff; border-radius: 15px; overflow: hidden; position: relative;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; flex-direction: column;
+    }
+    .mobile-product-card img { width: 100%; height: 160px; object-fit: contain; padding: 10px; }
+    .card-content { padding: 10px; flex-grow: 1; display: flex; flex-direction: column; }
+    .product-name { font-size: 0.85rem; font-weight: 600; height: 38px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.2; }
+    .product-price { color: #dc3545; font-weight: 700; font-size: 0.9rem; margin-top: auto; }
+
+    /* 4. Bottom Navigation Cố Định (Ép sát lề) */
+    .bottom-nav {
+        position: fixed; bottom: 0; left: 0; right: 0; width: 100%; background: #fff;
+        display: flex; justify-content: space-around; padding: 10px 0 15px 0;
+        border-top: 1px solid #eee; z-index: 2000; margin: 0;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+    }
+    .nav-item { text-align: center; color: #adb5bd; text-decoration: none; font-size: 0.7rem; flex-grow: 1; }
+    .nav-item i { font-size: 1.2rem; display: block; margin-bottom: 3px; }
+    .nav-item.active { color: #0d6efd; font-weight: bold; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="px-3 mt-3">
+    <h6 class="fw-bold mb-2">Danh mục nổi bật</h6>
+    <div class="scroll-x">
+        <a href="{% url 'home' %}" class="category-chip {% if not current_category %}active{% endif %}">Tất cả</a>
+        <a href="?category=dien-thoai" class="category-chip {% if current_category == 'dien-thoai' %}active{% endif %}">Điện thoại</a>
+        <a href="?category=ipad" class="category-chip {% if current_category == 'ipad' %}active{% endif %}">iPad</a>
+        <a href="?category=laptop" class="category-chip {% if current_category == 'laptop' %}active{% endif %}">Laptop</a>
+        <a href="?category=phu-kien" class="category-chip {% if current_category == 'phu-kien' %}active{% endif %}">Phụ kiện</a>
+    </div>
+</div>
+
+<div class="product-grid">
+    {% for product in products %}
+    <div class="mobile-product-card shadow-sm border border-light">
+        <a href="{% url 'product_detail' product.id %}" class="text-decoration-none text-dark">
+            <img src="{% if product.image %}{{ product.image.url }}{% else %}https://via.placeholder.com/150{% endif %}" alt="{{ product.name }}">
+            <div class="card-content">
+                <div class="product-name">{{ product.name }}</div>
+                <div class="product-price">{{ product.price|intcomma }} ₫</div>
+            </div>
+        </a>
+        <div class="px-2 pb-2">
+            <button data-product="{{ product.id }}" data-action="add" class="btn btn-primary btn-sm w-100 rounded-pill update-cart fw-bold shadow-sm">
+                <i class="fa-solid fa-cart-plus"></i> Chọn Mua
+            </button>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5 w-100" style="grid-column: span 2;">
+        <i class="fa-solid fa-box-open fs-1 text-muted mb-3"></i>
+        <p class="text-muted">Không tìm thấy sản phẩm nào!</p>
+    </div>
+    {% endfor %}
+</div>
+
+{% if products.has_other_pages %}
+<nav aria-label="Điều hướng trang sản phẩm" class="mt-4 mb-5 pb-4 px-3">
+    <ul class="pagination justify-content-center align-items-center mb-0">
+        
+        {% if products.has_previous %}
+            <li class="page-item">
+                <a class="page-link rounded-pill px-3 me-2 shadow-sm fw-bold text-primary" 
+                   href="?page={{ products.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}">
+                    <i class="fa-solid fa-chevron-left me-1"></i> Trước
+                </a>
+            </li>
+        {% endif %}
+        
+        <li class="page-item active">
+            <span class="page-link rounded-pill px-4 shadow-sm bg-primary border-0 fw-bold">
+                {{ products.number }} / {{ products.paginator.num_pages }}
+            </span>
+        </li>
+        
+        {% if products.has_next %}
+            <li class="page-item">
+                <a class="page-link rounded-pill px-3 ms-2 shadow-sm fw-bold text-primary" 
+                   href="?page={{ products.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}">
+                    Sau <i class="fa-solid fa-chevron-right ms-1"></i>
+                </a>
+            </li>
+        {% endif %}
+        
+    </ul>
+</nav>
+{% endif %}
+
+<div class="bottom-nav">
+    <a href="{% url 'home' %}" class="nav-item active">
+        <i class="fa-solid fa-house"></i>
+        <span>Trang chủ</span>
+    </a>
+    <a href="{% url 'map_view' %}" class="nav-item">
+        <i class="fa-solid fa-map-location-dot"></i>
+        <span>Cửa hàng</span>
+    </a>
+    <a href="{% url 'cart' %}" class="nav-item position-relative">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <span>Giỏ hàng</span>
+    </a>
+    {% if request.user.is_authenticated and request.user.is_staff %}
+        <a href="{% url 'custom_admin_dashboard' %}" class="nav-item text-warning">
+            <i class="fa-solid fa-gear"></i>
+            <span>Quản trị</span>
+        </a>
+    {% else %}
+        <a href="{% url 'login' %}" class="nav-item">
+            <i class="fa-solid fa-user"></i>
+            <span>Tài khoản</span>
+        </a>
+    {% endif %}
+</div>
+
+{% endblock %}

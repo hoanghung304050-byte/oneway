@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+{% load humanize %} 
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+    <title>{% block title %}ONEWAY - Hệ Thống Bán Lẻ Điện Thoại Hàng Đầu{% endblock %}</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .navbar-brand { font-weight: 800; font-size: 1.5rem; letter-spacing: 1px; color: #ffeb3b !important; }
+        .navbar { box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .price-text { color: #dc3545; font-weight: bold; font-size: 1.2rem; }
+        .product-card { transition: transform 0.3s, box-shadow 0.3s; border: none; border-radius: 12px; overflow: hidden; }
+        .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
+        .product-img { height: 250px; object-fit: cover; background-color: #fff; padding: 20px; }
+        footer { background-color: #212529; color: #adb5bd; padding: 40px 0 20px; margin-top: 50px; }
+        footer a { color: #adb5bd; text-decoration: none; transition: color 0.3s; }
+        footer a:hover { color: #fff; }
+        
+        /* ========================================== */
+        /* CSS GIAO DIỆN APP ĐIỆN THOẠI ( MOBILE )    */
+        /* ========================================== */
+        /* Rào chắn an toàn: Ẩn hoàn toàn khối Mobile khi ở trên máy tính (>= 992px) */
+        @media (min-width: 992px) {
+            .mobile-app-header-strict { display: none !important; }
+        }
+
+        /* Khi ở Mobile (Dưới 992px) */
+        @media (max-width: 991.98px) {
+            .mobile-app-header-strict { z-index: 1030; }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+{% block header %}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top d-none d-lg-block">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}"><i class="fa-solid fa-mobile-screen-button"></i> ONEWAY</a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <form class="d-flex position-relative me-3" style="width: 350px;">
+                    <div class="input-group">
+                        <input class="form-control border-0 shadow-sm" type="text" placeholder="Gõ tên điện thoại..." id="searchInputDesktop" autocomplete="off">
+                        <button class="btn btn-warning shadow-sm" type="button"><i class="fa-solid fa-magnifying-glass"></i></button>
+                    </div>
+                    <div id="searchResultsDesktop" class="dropdown-menu w-100 shadow-lg border-0 mt-1 p-0 rounded-3 overflow-hidden" style="display: none; position: absolute; top: 100%; left: 0; z-index: 1050;"></div>
+                </form>
+
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item me-3">
+                        <a class="nav-link fw-bold" href="/gioi-thieu/" style="font-size: 1.1rem;">
+                            <i class="fa-solid fa-circle-info text-primary"></i> Giới thiệu
+                        </a>
+                    </li>
+                    <li class="nav-item me-3"><a class="nav-link" href="{% url 'cart' %}"><i class="fa-solid fa-cart-shopping fs-5"></i> Giỏ Hàng</a></li>
+                    {% if request.user.is_authenticated %}
+                        <li class="nav-item me-2"><span class="nav-link fw-bold text-success">👤 Chào, {{ request.user.username }}!</span></li>
+                        {% if request.user.is_staff %}
+                            <li class="nav-item me-2"><a class="btn btn-warning btn-sm fw-bold" href="{% url 'custom_admin_dashboard' %}"><i class="fa-solid fa-gear"></i> Quản Trị</a></li>
+                        {% endif %}
+                        <li class="nav-item"><a class="btn btn-outline-danger btn-sm" href="{% url 'logout' %}">Đăng xuất</a></li>
+                    {% else %}
+                        <li class="nav-item me-2"><a class="btn btn-outline-primary btn-sm" href="{% url 'login' %}">Đăng nhập</a></li>
+                        <li class="nav-item"><a class="btn btn-primary btn-sm" href="{% url 'register' %}">Đăng ký</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="mobile-app-header-strict sticky-top shadow-sm d-block d-lg-none">
+        
+        <div class="bg-dark d-flex justify-content-between align-items-center px-3 py-2">
+            <a href="{% url 'home' %}" class="text-decoration-none d-flex align-items-center">
+                <i class="fa-solid fa-mobile-screen-button fs-3 text-warning me-2"></i>
+                <span class="fs-4 fw-bold text-white tracking-wide" style="letter-spacing: 1px;">ONEWAY</span>
+            </a>
+            
+            {% if request.user.is_authenticated %}
+                <span class="badge bg-secondary rounded-pill"><i class="fa-solid fa-user me-1"></i> {{ request.user.username }}</span>
+            {% else %}
+                <a href="{% url 'login' %}" class="text-white small text-decoration-none border border-secondary rounded-pill px-3 py-1">Đăng nhập</a>
+            {% endif %}
+        </div>
+
+        <div class="bg-white px-3 py-2 border-bottom">
+            <form action="{% url 'home' %}" method="GET" class="mb-0">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-0 rounded-start-pill text-muted ps-3">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </span>
+                    <input type="text" name="q" id="searchInputMobile" class="form-control bg-light border-0 rounded-end-pill py-2 shadow-none" 
+                           placeholder="Bạn cần tìm gì hôm nay?" value="{{ request.GET.q|default:'' }}" autocomplete="off">
+                </div>
+                <div id="searchResultsMobile" class="dropdown-menu w-100 shadow-lg border-0 mt-1 p-0 rounded-3 overflow-hidden position-absolute" style="display: none; top: 100%; left: 0; z-index: 1050; max-height: 300px; overflow-y: auto;"></div>
+            </form>
+        </div>
+    </div>
+{% endblock header %}
+
+{% if messages %}
+    <div class="container mt-3 position-relative" style="z-index: 9999;">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm border-0" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+{% block content %}{% endblock %}
+
+<footer class="d-none d-lg-block"> <div class="container">
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <h5 class="text-white fw-bold">ONEWAY STORE</h5>
+                <p class="small mt-3">Hệ thống bán lẻ điện thoại, phụ kiện thông minh chính hãng uy tín tích hợp bản đồ GIS.</p>
+            </div>
+            <div class="col-md-4 mb-3">
+                <h5 class="text-white fw-bold">Chính Sách</h5>
+                <ul class="list-unstyled small mt-3">
+                    <li><a href="#">Bảo hành</a></li>
+                    <li><a href="#">Đổi trả</a></li>
+                    <li><a href="#">Giao hàng</a></li>
+                </ul>
+            </div>
+            <div class="col-md-4 mb-3">
+                <h5 class="text-white fw-bold">Hệ Thống</h5>
+                <a href="{% url 'map_view' %}" class="btn btn-outline-warning btn-sm mt-2"><i class="fa-solid fa-map"></i> Xem Bản Đồ GIS</a>
+            </div>
+        </div>
+        <hr class="mt-4 border-secondary">
+        <div class="text-center small mt-3">&copy; 2026 ONEWAY STORE. Đồ án Website tích hợp GIS.</div>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>var csrftoken = '{{ csrf_token }}';</script>
+
+<script>
+    // --- LOGIC GIỎ HÀNG ---
+    var updateBtns = document.getElementsByClassName('update-cart')
+    for (var i = 0; i < updateBtns.length; i++) {
+        updateBtns[i].addEventListener('click', function(){
+            var productId = this.dataset.product
+            var action = this.dataset.action
+            updateUserOrder(productId, action)
+        })
+    }
+    function updateUserOrder(productId, action){
+        var url = '/update_item/'
+        fetch(url, {
+            method:'POST',
+            headers:{'Content-Type':'application/json','X-CSRFToken': csrftoken}, 
+            body:JSON.stringify({'productId':productId, 'action':action})
+        })
+        .then(res => res.json())
+        .then(data => { alert("Đã thêm vào giỏ thành công!"); location.reload(); });
+    }
+
+    // --- LOGIC TÌM KIẾM (CHẠY CHO CẢ PC VÀ MOBILE) ---
+    function setupSearch(inputId, resultsId) {
+        const searchInput = document.getElementById(inputId);
+        const searchResults = document.getElementById(resultsId);
+        let timeout = null;
+        
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                clearTimeout(timeout);
+                const query = this.value.trim();
+                if (query.length > 0) {
+                    timeout = setTimeout(() => {
+                        fetch(`/api/search/?q=${query}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            searchResults.innerHTML = '';
+                            if (data.data.length > 0) {
+                                data.data.forEach(product => {
+                                    const item = document.createElement('a');
+                                    item.href = product.url;
+                                    item.className = 'dropdown-item d-flex align-items-center py-2 border-bottom';
+                                    item.innerHTML = `<img src="${product.image_url}" style="width: 40px; height: 40px; object-fit: cover;" class="me-2 rounded"><div><h6 class="mb-0 small fw-bold text-wrap text-truncate" style="max-width: 250px;">${product.name}</h6><small class="text-danger fw-bold">${product.price} ₫</small></div>`;
+                                    searchResults.appendChild(item);
+                                });
+                                searchResults.style.display = 'block';
+                            } else {
+                                searchResults.innerHTML = '<div class="p-3 small text-center text-muted"><i class="fa-solid fa-box-open d-block fs-3 mb-2"></i>Không tìm thấy!</div>';
+                                searchResults.style.display = 'block';
+                            }
+                        });
+                    }, 300);
+                } else { searchResults.style.display = 'none'; }
+            });
+
+            // Ẩn kết quả khi click ra ngoài
+            document.addEventListener('click', function(e) {
+                if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                    searchResults.style.display = 'none';
+                }
+            });
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        setupSearch('searchInputDesktop', 'searchResultsDesktop'); // Chạy cho PC
+        setupSearch('searchInputMobile', 'searchResultsMobile');   // Chạy cho Mobile
+    });
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

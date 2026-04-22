@@ -1,109 +1,197 @@
-{% extends "base.html" %}
-{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giới thiệu - ONEWAY Store</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* CSS Tùy chỉnh cho giao diện hiện đại */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; }
+        
+        /* Cấu hình Banner Carousel */
+        .carousel-item { height: 60vh; min-height: 400px; background: #000; color: white; position: relative; }
+        .carousel-image { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.6; }
+        .carousel-caption { bottom: 20%; z-index: 2; text-align: left; max-width: 600px; }
+        .carousel-caption h1 { font-size: 3.5rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+        .carousel-caption p { font-size: 1.2rem; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); }
+        
+        /* Bố cục chéo và bóng đổ */
+        .story-section { padding: 80px 0; background: white; }
+        .img-story { border-radius: 20px; box-shadow: 0 15px 30px rgba(0,0,0,0.15); transition: transform 0.4s ease; }
+        .img-story:hover { transform: scale(1.02); }
+        
+        /* Dải thông số (Stats Ribbon) */
+        .stats-ribbon { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 50px 0; }
+        .stat-number { font-size: 3rem; font-weight: 800; color: #0dcaf0; }
+        
+        /* Thẻ tính năng (Feature Cards) */
+        .features-section { padding: 80px 0; }
+        .feature-card { background: white; border-radius: 15px; padding: 40px 30px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.05); transition: all 0.3s ease; border-bottom: 5px solid transparent; height: 100%; }
+        .feature-card:hover { transform: translateY(-15px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); border-bottom: 5px solid #0d6efd; }
+        .feature-icon { font-size: 50px; color: #0d6efd; margin-bottom: 20px; }
+        
+        /* Banner CTA (Call To Action) gọi đến hệ thống GIS */
+        .cta-gis { background: url('https://images.unsplash.com/photo-1524661135-423995f22d0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover fixed; position: relative; padding: 100px 0; color: white; text-align: center; }
+        .cta-gis::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); }
+        .cta-content { position: relative; z-index: 2; }
+    </style>
+</head>
+<body>
 
-{% block content %}
+<a href="/" class="btn-back-home text-decoration-none">
+        <i class="fa-solid fa-chevron-left"></i>
+    </a>
+    <style>
+        .btn-back-home {
+            position: absolute;
+            top: 25px;
+            left: 25px;
+            z-index: 1050;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.3); /* Nền đen mờ */
+            backdrop-filter: blur(8px);     /* Hiệu ứng kính */
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.3s ease;
+        }
+        .btn-back-home:hover {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+            transform: scale(1.1); /* Phóng to nhẹ khi di chuột */
+        }
+    </style>
 
-<!-- Hero Section -->
-<section class="bg-dark text-white text-center py-5">
-    <div class="container">
-        <h1 class="display-4 fw-bold">Giới thiệu về Oneway Store</h1>
-        <p class="lead mt-3">
-            Hệ thống cửa hàng cung cấp sản phẩm công nghệ chính hãng – uy tín – giá tốt.
-        </p>
-    </div>
-</section>
-
-<!-- About Section -->
-<section class="py-5">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-md-6">
-                <img src="{% static 'images/store.jpg' %}" class="img-fluid rounded shadow" alt="Oneway Store">
+    <div id="heroCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel">
+        <div class="carousel-indicators">
+            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active"></button>
+            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1"></button>
+            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2"></button>
+        </div>
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <img src="https://images.unsplash.com/photo-1616348436168-de43ad0db179?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" class="carousel-image" alt="iPhone 15 Pro">
+                <div class="container h-100 position-relative">
+                    <div class="carousel-caption">
+                        <span class="badge bg-primary mb-2 px-3 py-2 fs-6 rounded-pill">Mới Nhất 2026</span>
+                        <h1>CÔNG NGHỆ ĐỈNH CAO</h1>
+                        <p>Trải nghiệm các dòng siêu phẩm Flagship mới nhất với mức giá và chính sách hậu mãi tốt nhất thị trường.</p>
+                        <a href="/" class="btn btn-primary btn-lg mt-3 px-5 rounded-pill">Mua Ngay</a>
+                    </div>
+                </div>
             </div>
-            <div class="col-md-6">
-                <h2 class="fw-bold mb-3">Chúng tôi là ai?</h2>
-                <p>
-                    Oneway Store được thành lập với mong muốn mang đến cho khách hàng 
-                    những sản phẩm công nghệ chất lượng cao, chính hãng với mức giá hợp lý.
-                </p>
-                <p>
-                    Chúng tôi cam kết cung cấp dịch vụ hậu mãi tận tâm và trải nghiệm mua sắm hiện đại.
-                </p>
+            <div class="carousel-item">
+                <img src="https://images.unsplash.com/photo-1556656793-08538906a9f8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" class="carousel-image" alt="Cửa hàng hiện đại">
+                <div class="container h-100 position-relative">
+                    <div class="carousel-caption">
+                        <h1>UY TÍN VÀ CHẤT LƯỢNG</h1>
+                        <p>Hệ thống chuỗi bán lẻ chuyên nghiệp, cam kết 100% sản phẩm chính hãng, bảo hành toàn quốc.</p>
+                    </div>
+                </div>
             </div>
         </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon"></span>
+        </button>
     </div>
-</section>
 
-<!-- Vision & Mission -->
-<section class="bg-light py-5">
-    <div class="container text-center">
-        <h2 class="fw-bold mb-4">Tầm nhìn & Sứ mệnh</h2>
-        <div class="row">
-            <div class="col-md-6">
-                <h4 class="fw-bold">Tầm nhìn</h4>
-                <p>Trở thành chuỗi cửa hàng công nghệ hàng đầu tại Việt Nam.</p>
-            </div>
-            <div class="col-md-6">
-                <h4 class="fw-bold">Sứ mệnh</h4>
-                <p>Mang công nghệ chất lượng đến gần hơn với mọi người.</p>
+    <section class="story-section">
+        <div class="container">
+            <div class="row align-items-center mb-5">
+                <div class="col-lg-6 mb-4 pe-lg-5">
+                    <h6 class="text-primary fw-bold text-uppercase">Về ONEWAY Store</h6>
+                    <h2 class="display-6 fw-bold mb-4">Hành trình mang công nghệ đến mọi nhà</h2>
+                    <p class="fs-5 text-secondary">Khởi đầu từ một cửa hàng nhỏ, ONEWAY đã vươn mình trở thành điểm đến tin cậy hàng đầu cho những tín đồ yêu thích công nghệ và điện thoại thông minh.</p>
+                    <p class="text-secondary">Chúng tôi không chỉ bán một thiết bị, chúng tôi trao gửi sự an tâm. Mọi quy trình từ nhập hàng, kiểm định, đến tư vấn và chăm sóc sau bán hàng đều được chuẩn hóa ở mức khắt khe nhất.</p>
+                    <ul class="list-unstyled mt-4 fs-5">
+                        <li class="mb-2"><i class="fa-solid fa-check text-success me-2"></i> Đối tác chiến lược của Apple, Samsung, Xiaomi.</li>
+                        <li class="mb-2"><i class="fa-solid fa-check text-success me-2"></i> Đội ngũ kỹ thuật viên đạt chuẩn quốc tế.</li>
+                        <li class="mb-2"><i class="fa-solid fa-check text-success me-2"></i> Mạng lưới cửa hàng phủ sóng toàn quốc.</li>
+                    </ul>
+                </div>
+                <div class="col-lg-6">
+                    <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Đội ngũ ONEWAY" class="img-fluid img-story">
+                </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 
-<!-- Core Values -->
-<section class="py-5">
-    <div class="container text-center">
-        <h2 class="fw-bold mb-4">Giá trị cốt lõi</h2>
-        <div class="row">
-            <div class="col-md-4">
-                <h5>Uy tín</h5>
-                <p>Luôn đặt sự tin tưởng của khách hàng lên hàng đầu.</p>
-            </div>
-            <div class="col-md-4">
-                <h5>Chất lượng</h5>
-                <p>Sản phẩm chính hãng – bảo hành rõ ràng.</p>
-            </div>
-            <div class="col-md-4">
-                <h5>Tận tâm</h5>
-                <p>Hỗ trợ khách hàng nhanh chóng và chuyên nghiệp.</p>
+    <section class="stats-ribbon text-center">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-3 col-6 mb-4 mb-md-0">
+                    <div class="stat-number">5+</div>
+                    <div class="fs-5 mt-2">Năm kinh nghiệm</div>
+                </div>
+                <div class="col-md-3 col-6 mb-4 mb-md-0">
+                    <div class="stat-number">50K+</div>
+                    <div class="fs-5 mt-2">Khách hàng tin chọn</div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="stat-number">24/7</div>
+                    <div class="fs-5 mt-2">Hỗ trợ kỹ thuật</div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="stat-number">100%</div>
+                    <div class="fs-5 mt-2">Chính hãng nguyên seal</div>
+                </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 
-<!-- Team Section -->
-<section class="bg-light py-5">
-    <div class="container text-center">
-        <h2 class="fw-bold mb-4">Đội ngũ của chúng tôi</h2>
-        <div class="row">
-            <div class="col-md-4">
-                <img src="{% static 'images/team1.jpg' %}" class="rounded-circle mb-3" width="150">
-                <h5>Nguyễn Văn A</h5>
-                <p>Giám đốc điều hành</p>
+    <section class="features-section bg-light">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold display-6">Tại sao chọn chúng tôi?</h2>
+                <div class="mx-auto mt-3" style="width: 80px; height: 4px; background-color: #0d6efd; border-radius: 2px;"></div>
             </div>
-            <div class="col-md-4">
-                <img src="{% static 'images/team2.jpg' %}" class="rounded-circle mb-3" width="150">
-                <h5>Trần Thị B</h5>
-                <p>Quản lý cửa hàng</p>
-            </div>
-            <div class="col-md-4">
-                <img src="{% static 'images/team3.jpg' %}" class="rounded-circle mb-3" width="150">
-                <h5>Lê Văn C</h5>
-                <p>Chuyên viên tư vấn</p>
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <i class="fa-solid fa-medal feature-icon"></i>
+                        <h4 class="fw-bold">Chất lượng tuyệt đối</h4>
+                        <p class="text-secondary mt-3">Cam kết đền bù gấp 10 lần nếu phát hiện hàng giả, hàng nhái. Mọi sản phẩm đều có hóa đơn VAT và bảo hành chính hãng.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <i class="fa-solid fa-wallet feature-icon"></i>
+                        <h4 class="fw-bold">Giá cả cạnh tranh</h4>
+                        <p class="text-secondary mt-3">Luôn có các chương trình khuyến mãi, thu cũ đổi mới trợ giá tốt nhất thị trường, hỗ trợ trả góp 0% lãi suất.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="feature-card">
+                        <i class="fa-solid fa-truck-fast feature-icon"></i>
+                        <h4 class="fw-bold">Giao hàng siêu tốc</h4>
+                        <p class="text-secondary mt-3">Giao hàng miễn phí tận nhà trong vòng 2 giờ nội thành. Hỗ trợ thanh toán sau khi kiểm tra máy thành công.</p>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 
-<!-- Call To Action -->
-<section class="bg-dark text-white text-center py-5">
-    <div class="container">
-        <h2 class="fw-bold mb-3">Khám phá sản phẩm của chúng tôi ngay hôm nay!</h2>
-        <a href="{% url 'product_list' %}" class="btn btn-warning btn-lg">
-            Xem sản phẩm
-        </a>
-    </div>
-</section>
+    <section class="cta-gis">
+        <div class="container cta-content">
+            <h2 class="display-5 fw-bold mb-4">Tìm Cửa Hàng Gần Bạn Nhất!</h2>
+            <p class="lead mb-5 mx-auto" style="max-width: 700px;">Hệ thống GIS tích hợp bản đồ thông minh độc quyền của ONEWAY sẽ giúp bạn định vị, xem tình trạng mở/đóng cửa và dẫn đường đến chi nhánh một cách chính xác nhất.</p>
+            <a href="/map/" class="btn btn-outline-light btn-lg px-5 py-3 rounded-pill fw-bold">
+                <i class="fa-solid fa-location-crosshairs me-2"></i> Mở Bản Đồ ONEWAY
+            </a>
+        </div>
+    </section>
 
-{% endblock %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

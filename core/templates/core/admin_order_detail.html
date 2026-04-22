@@ -22,14 +22,29 @@
                 </thead>
                 <tbody>
                     {% for item in items %}
-                    <tr>
-                        <td style="width: 80px;">
-                            <img src="{{ item.product.image_url }}" alt="img" class="img-fluid rounded border">
-                        </td>
-                        <td class="align-middle fw-bold">{{ item.product.name }}</td>
-                        <td class="align-middle text-danger">{{ item.product.price }} ₫</td>
-                        <td class="align-middle text-center fw-bold fs-5">{{ item.quantity }}</td>
-                    </tr>
+                        {% if item.product %}
+                        <tr>
+                            <td style="width: 80px;">
+                                <img src="{{ item.product.image_url }}" alt="img" class="img-fluid rounded border">
+                            </td>
+                            <td class="align-middle fw-bold">{{ item.product.name }}</td>
+                            <td class="align-middle text-danger">{{ item.product.price|default:"0" }} ₫</td>
+                            <td class="align-middle text-center fw-bold fs-5">{{ item.quantity }}</td>
+                        </tr>
+                        {% else %}
+                        <tr class="bg-light">
+                            <td style="width: 80px;" class="text-center align-middle">
+                                <div class="border rounded d-flex align-items-center justify-content-center bg-white" style="height: 60px;">
+                                    <i class="fa-solid fa-box-archive text-muted fs-4"></i>
+                                </div>
+                            </td>
+                            <td class="align-middle text-danger fst-italic fw-bold">
+                                <i class="fa-solid fa-triangle-exclamation me-1"></i> Sản phẩm đã bị xóa khỏi hệ thống
+                            </td>
+                            <td class="align-middle text-muted">--</td>
+                            <td class="align-middle text-center fw-bold fs-5 text-muted">{{ item.quantity }}</td>
+                        </tr>
+                        {% endif %}
                     {% endfor %}
                 </tbody>
             </table>
