@@ -15,23 +15,15 @@ import os
 GDAL_LIBRARY_PATH =r"C:\Users\admn\AppData\Local\Programs\Python\Python313\Lib\site-packages\osgeo\gdal.dll"
 os.environ["PATH"] += r";C:\Users\admn\AppData\Local\Programs\Python\Python313\Lib\site-packages\osgeo"
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-medmfyzvq_0tfbxzy%r7347z2+$e116k+32za+7188v=5rnqb*'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
-
-# Application definition
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -42,8 +34,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.humanize',
     'core',
-    'django.contrib.gis', # Thêm dòng này để dùng các hàm bản đồ
-    'leaflet', # THÊM DÒNG NÀY VÀO ĐÂY
+    'django.contrib.gis', 
+    'leaflet',
     'django_user_agents',
     'ckeditor',
     'ckeditor_uploader',
@@ -51,10 +43,8 @@ INSTALLED_APPS = [
 
 CKEDITOR_UPLOAD_PATH = "uploads/editor/"
 
-# Cấu hình thư mục lưu ảnh khi upload từ editor
 CKEDITOR_UPLOAD_PATH = "uploads/editor/"
 
-# Tùy chỉnh giao diện thanh công cụ giống ảnh ngài gửi
 CKEDITOR_CONFIGS = {
     'default': {
         'toolbar': 'Custom',
@@ -65,7 +55,7 @@ CKEDITOR_CONFIGS = {
             ['Image'], # Nút chèn ảnh
             ['Maximize']
         ],
-        'height': 300, # Chiều cao mặc định của khung nhập
+        'height': 300, 
         'width': '100%',
     }
 }
@@ -101,24 +91,18 @@ TEMPLATES = [
 WSGI_APPLICATION = 'oneway.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-
 DATABASES = {
     'default': {
-        # Sử dụng engine của PostGIS thay vì PostgreSQL bình thường
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'oneway_db',        # Tên database ngài vừa tạo
-        'USER': 'postgres',         # User mặc định của PostgreSQL
-        'PASSWORD': '123456',          # Mật khẩu lúc ngài cài PostgreSQL (Sửa lại cho đúng)
+        'NAME': 'oneway_db',    
+        'USER': 'postgres',        
+        'PASSWORD': '123456',       
         'HOST': 'localhost',
         'PORT': '5432',
     }
 }
 
 
-# Password validation
-# https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -136,8 +120,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# Internationalization
-# https://docs.djangoproject.com/en/6.0/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
 
@@ -148,22 +130,17 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/6.0/howto/static-files/
-
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 
-# Đường dẫn URL để truy cập ảnh trên web
 MEDIA_URL = '/media/'
 
-# Thư mục thực tế trên máy tính để chứa ảnh
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 LEAFLET_CONFIG = {
-    'DEFAULT_CENTER': (10.762622, 106.660172), # Tọa độ TP.HCM
+    'DEFAULT_CENTER': (10.762622, 106.660172), 
     'DEFAULT_ZOOM': 12,
     'MIN_ZOOM': 3,
     'MAX_ZOOM': 18,
@@ -178,5 +155,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'uniconr546@gmail.com'
-EMAIL_HOST_PASSWORD = 'arcu lcyo rjhu udpw' # Không phải mật khẩu đăng nhập
+EMAIL_HOST_PASSWORD = 'arcu lcyo rjhu udpw'
+
+LOGIN_URL = 'login'
 

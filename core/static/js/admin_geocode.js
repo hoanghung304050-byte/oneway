@@ -20,12 +20,12 @@ window.addEventListener('map:init', function (e) {
         // Gắn nút vào giao diện (ngay sau ô nhập địa chỉ)
         addressInput.parentNode.insertBefore(btnGeocode, addressInput.nextSibling);
 
-        // 2. XỬ LÝ SỰ KIỆN KHI NGÀI BẤM NÚT NÀY
+        // 2. XỬ LÝ SỰ KIỆN 
         btnGeocode.addEventListener('click', function() {
             var address = addressInput.value;
             
             if (address.trim() === "") {
-                alert("Ngài chưa nhập địa chỉ vào ô!");
+                alert("bạn chưa nhập địa chỉ vào ô!");
                 return;
             }
 
@@ -55,17 +55,17 @@ window.addEventListener('map:init', function (e) {
                     };
                     locationInput.value = JSON.stringify(pointGeoJSON);
 
-                    // C. Cắm cờ xanh lên bản đồ cho ngài xem trước
+                    // C. Cắm cờ xanh lên bản đồ xem trước
                     if (autoMarker !== null) {
                         map.removeLayer(autoMarker);
                     }
                     autoMarker = L.marker([lat, lon]).addTo(map);
                     autoMarker.bindPopup("Vị trí của: " + address).openPopup();
                     
-                    alert("Đã ghim tọa độ! Ngài có thể bấm LƯU ở dưới cùng ngay bây giờ.");
+                    alert("Đã ghim tọa độ! có thể bấm LƯU ở dưới cùng ngay bây giờ.");
 
                 } else {
-                    alert("Không tìm thấy tọa độ tự động. Ngài vui lòng dùng thanh công cụ bên trái bản đồ để tự chấm điểm nhé!");
+                    alert("Không tìm thấy tọa độ tự động. vui lòng dùng thanh công cụ bên trái bản đồ để tự chấm điểm nhé!");
                 }
             })
             .catch(err => {

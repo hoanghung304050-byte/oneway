@@ -27,16 +27,11 @@ class Product(models.Model):
     image_3 = models.ImageField(upload_to='products/', null=True, blank=True)
     image_4 = models.ImageField(upload_to='products/', null=True, blank=True)
     image_5 = models.ImageField(upload_to='products/', null=True, blank=True)
-    
-    # ĐÃ SỬA: Thay đổi TextField thành RichTextUploadingField
     description = RichTextUploadingField(verbose_name="Mô tả chi tiết", null=True, blank=True)
-    
-    # (Tùy chọn) Đại vương có thể xóa dòng này nếu không cần ảnh mô tả riêng lẻ nữa
     desc_image = models.ImageField(upload_to='products/desc/', null=True, blank=True)
 
     @property
     def get_image_url(self):
-        # Logic an toàn: Nếu không có ảnh thì trả về ảnh placeholder, không gây lỗi Value Error
         if self.image and hasattr(self.image, 'url'):
             return self.image.url
         return "https://via.placeholder.com/300x300?text=ONEWAY+Product"
@@ -51,24 +46,16 @@ class Store(models.Model):
     name = models.CharField(max_length=200)
     address = models.CharField(max_length=500)
     phone = models.CharField(max_length=20, blank=True, null=True)
-    
-    # ĐÃ SỬA: Nâng cấp lên RichTextUploadingField để chèn nhiều ảnh và định dạng chữ
     description = RichTextUploadingField(verbose_name="Mô tả chi tiết", blank=True, null=True)
-    
     opening_time = models.TimeField(null=True, blank=True)
     closing_time = models.TimeField(null=True, blank=True)
     rating = models.FloatField(default=5.0)
-    
-    location = models.PointField(srid=4326) # Tọa độ gốc GIS
+    location = models.PointField(srid=4326) 
     lat = models.FloatField(null=True, blank=True)
     lng = models.FloatField(null=True, blank=True)
-
-    # ĐÃ SỬA: Xóa bỏ 1 trường 'image' bị trùng lặp phía trên, gộp lại cho gọn
     image = models.ImageField(upload_to='stores/', blank=True, null=True, verbose_name="Ảnh chính")
     image_2 = models.ImageField(upload_to='stores/', blank=True, null=True, verbose_name="Ảnh Poster 2")
     image_3 = models.ImageField(upload_to='stores/', blank=True, null=True, verbose_name="Ảnh Poster 3")
-    
-    # Lưu ý nhỏ: Ngài có thể đổi trường này thành RichTextUploadingField luôn nếu muốn viết ưu đãi có màu sắc nổi bật
     promotion_text = RichTextUploadingField(blank=True, null=True, verbose_name="Chương trình ưu đãi")
 
     manager = models.OneToOneField(
@@ -88,14 +75,18 @@ class Store(models.Model):
             return self.image.url
         return "https://via.placeholder.com/400x200?text=ONEWAY+Store"
 
-    # Thuộc tính kiểm tra đóng/mở cửa tự động
     @property
     def is_open(self):
         if not self.opening_time or not self.closing_time:
-            return True # Nếu không set giờ thì coi như mở suốt
+            return True 
         now = timezone.localtime().time()
         return self.opening_time <= now <= self.closing_time
+class StoreImage(models.Model):
+    store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name='gallery')
+    image = models.ImageField(upload_to='stores/gallery/', verbose_name="Ảnh Slide")
 
+    def __str__(self):
+        return f"Ảnh slide của {self.store.name}"
 # ==========================================
 # 3. QUẢN LÝ TỒN KHO (MỚI)
 # ==========================================
@@ -106,7 +97,7 @@ class Inventory(models.Model):
 
     class Meta:
         verbose_name_plural = "Tồn kho chi nhánh"
-        unique_together = ('product', 'store') # Một sản phẩm tại một kho chỉ có 1 dòng
+        unique_together = ('product', 'store')
 
     def __str__(self):
         return f"{self.product.name} - {self.store.name}: {self.quantity}"
@@ -133,20 +124,14 @@ class Order(models.Model):
     order_code = models.CharField(max_length=20, unique=True, editable=False, null=True, blank=True)
     order_type = models.CharField(max_length=10, choices=ORDER_TYPE, default='online')
     status = models.CharField(max_length=15, choices=STATUS, default='pending')
-    
-    # Đơn hàng này thuộc chi nhánh nào xử lý (Quan trọng cho logic web nhân viên)
     assigned_store = models.ForeignKey(Store, on_delete=models.SET_NULL, null=True, blank=True)
-    
     date_ordered = models.DateTimeField(auto_now_add=True)
     complete = models.BooleanField(default=False)
-    
-    # Thông tin phí ship GIS
     shipping_fee = models.DecimalField(max_digits=10, decimal_places=0, default=0)
     distance_km = models.FloatField(default=0, verbose_name="Khoảng cách giao hàng (km)")
 
     def save(self, *args, **kwargs):
         if not self.order_code:
-            # Tạo mã đơn tự động kiểu: OW-2026-XXXX
             self.order_code = f"OW-{uuid.uuid4().hex[:6].upper()}"
         super().save(*args, **kwargs)
 
@@ -156,10 +141,7 @@ class Order(models.Model):
     @property
     def get_cart_total(self):
         orderitems = self.orderitem_set.all()
-        # Tính tổng tiền hàng (đang là float)
         total = sum([item.get_total for item in orderitems])
-        
-        # FIX: Ép kiểu total về Decimal trước khi cộng với shipping_fee
         return Decimal(total) + self.shipping_fee
 
 class OrderItem(models.Model):
@@ -182,4 +164,15 @@ class Review(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     class Meta:
         unique_together = ('user', 'product')
-        
+
+# ==========================================
+# 7. QUẢN LÝ TRANG GIỚI THIỆU
+# ==========================================
+class CompanyInfo(models.Model):
+    title = models.CharField(max_length=200, default="Giới thiệu Oneway Store")
+    description = models.TextField(blank=True, null=True)
+
+class CompanyImage(models.Model):
+    info = models.ForeignKey(CompanyInfo, related_name='images', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='company_images/')
+    is_banner = models.BooleanField(default=True) 

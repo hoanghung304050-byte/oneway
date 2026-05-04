@@ -25,7 +25,11 @@
                         {% if item.product %}
                         <tr>
                             <td style="width: 80px;">
-                                <img src="{{ item.product.image_url }}" alt="img" class="img-fluid rounded border">
+                            {% if item.product.image %}
+                                            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="rounded border shadow-sm" style="width: 50px; height: 50px; object-fit: cover;">
+                                        {% else %}
+                                            <img src="https://dummyimage.com/50x50/e2e8f0/475569&text=No+Image" alt="No image" class="rounded border shadow-sm" style="width: 50px; height: 50px; object-fit: cover;">
+                                        {% endif %}
                             </td>
                             <td class="align-middle fw-bold">{{ item.product.name }}</td>
                             <td class="align-middle text-danger">{{ item.product.price|default:"0" }} ₫</td>

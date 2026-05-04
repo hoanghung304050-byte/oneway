@@ -64,5 +64,4 @@ class StoreForm(forms.ModelForm):
             'opening_time': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
             'closing_time': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
             'description': forms.Textarea(attrs={'rows': 3, 'class': 'form-control', 'placeholder': 'Nhập vài dòng giới thiệu...'}),
-            # Trường 'image' là ImageField sẽ tự sinh ra nút chọn file.
         }

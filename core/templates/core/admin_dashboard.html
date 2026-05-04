@@ -5,18 +5,14 @@
 <style>
     :root { --sidebar-width: 260px; --accent-color: #0d6efd; --bg-admin: #f4f7fa; }
     
-    /* Ẩn navbar và footer của trang chủ để không vướng Admin */
     nav.navbar, footer { display: none !important; }
     body { background-color: var(--bg-admin); overflow-x: hidden; }
-    
-    /* BỎ display: flex ĐỂ KHÔNG BỊ LỖI KHOẢNG TRẮNG BÊN TRÁI */
     .admin-container { 
         display: block; 
         min-height: 100vh; 
         width: 100%;
     }
 
-    /* SIDEBAR CỐ ĐỊNH */
     .sidebar { 
         width: var(--sidebar-width); 
         background: white; 
@@ -39,7 +35,7 @@
 
     /* NỘI DUNG CHÍNH (MAIN CONTENT) */
     .main-content { 
-        margin-left: var(--sidebar-width); /* CÁCH LỀ ĐÚNG BẰNG SIDEBAR */
+        margin-left: var(--sidebar-width); 
         padding: 30px; 
         transition: margin-left 0.3s ease; 
         min-height: 100vh;
@@ -48,14 +44,14 @@
     /* MOBILE GIAO DIỆN (Dưới 992px) */
     @media (max-width: 991.98px) {
         .sidebar {
-            transform: translateX(-100%); /* Giấu Sidebar */
+            transform: translateX(-100%);
             box-shadow: 5px 0 15px rgba(0,0,0,0.1);
         }
         
-        .sidebar.active { transform: translateX(0); /* Hiện ra khi bấm nút */ }
+        .sidebar.active { transform: translateX(0); }
 
         .main-content {
-            margin-left: 0 !important; /* XÓA KHOẢNG TRẮNG TRÊN MOBILE */
+            margin-left: 0 !important; 
             padding: 15px;
         }
 
@@ -65,6 +61,11 @@
         }
         .sidebar-overlay.show { display: block; }
     }
+
+    .cke_notifications_area {
+        display: none !important;
+    }
+
 
     /* TRANG TRÍ CHUNG */
     .stat-card { border: none; border-radius: 15px; background: white; padding: 20px; box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.05); height: 100%; border-left: 5px solid var(--accent-color); }
@@ -106,6 +107,10 @@
             </a>
             <a class="nav-link admin-nav-link" onclick="showSection('section-users', this)">
                 <i class="fa-solid fa-users-gear"></i> Quản lý người dùng
+            </a>
+            <a class="nav-link admin-nav-link" href="javascript:void(0)" onclick="showSection('section-about', this)">
+                <i class="fa-solid fa-circle-info text-primary me-2"></i>
+                <span>Quản lý Giới thiệu</span>
             </a>
         </nav>
         {% endif %}
@@ -207,7 +212,13 @@
                             {% for product in products %}
                             <tr>
                                 <td>{{ product.id }}</td>
-                                <td><img src="{{ product.image_url }}" width="40" class="rounded shadow-sm"></td>
+                                <td>
+                                    {% if product.image %}
+                                        <img src="{{ product.image.url }}" width="40" height="40" style="object-fit: cover;" class="rounded shadow-sm border" alt="{{ product.name }}">
+                                    {% else %}
+                                        <img src="https://dummyimage.com/40x40/e2e8f0/475569&text=No+Img" width="40" height="40" class="rounded shadow-sm border" alt="No image">
+                                    {% endif %}
+                                </td>
                                 <td class="fw-bold">{{ product.name }}</td>
                                 <td class="text-danger fw-bold">{{ product.price|intcomma }} ₫</td>
                                 <td>
@@ -254,41 +265,6 @@
                         * File Excel cần có cột <b>Mã SP</b> và <b>Số lượng mới</b>. 
                         {% if is_super %}Admin tổng cần thêm cột <b>Mã Chi Nhánh</b>.{% endif %}
                     </div>
-                </div>
-            </div>
-
-            <div class="table-card mb-4 border-start border-info border-5 shadow-sm bg-light">
-                <div class="p-3">
-                    <h6 class="fw-bold text-info mb-3"><i class="fa-solid fa-plus-circle me-2"></i> Cập nhật thủ công</h6>
-                    <form action="{% url 'update_stock' %}" method="POST" class="row g-2 align-items-end">
-                        {% csrf_token %}
-                        {% if is_super %}
-                        <div class="col-md-3">
-                            <label class="small fw-bold">Chọn chi nhánh</label>
-                            <select name="store_id" class="form-select form-select-sm rounded-pill px-3" required>
-                                <option value="">-- Chi nhánh --</option>
-                                {% for s in stores %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}
-                            </select>
-                        </div>
-                        {% endif %}
-                        
-                        <div class="{% if is_super %}col-md-4{% else %}col-md-7{% endif %}">
-                            <label class="small fw-bold">Chọn sản phẩm</label>
-                            <select name="product_id" class="form-select form-select-sm rounded-pill px-3" required>
-                                <option value="">-- Sản phẩm --</option>
-                                {% for p in products %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}
-                            </select>
-                        </div>
-                        
-                        <div class="col-md-3">
-                            <label class="small fw-bold">Số lượng mới</label>
-                            <input type="number" name="quantity" class="form-control form-control-sm rounded-pill px-3" placeholder="Ví dụ: 50" required>
-                        </div>
-                        
-                        <div class="col-md-2">
-                            <button type="submit" class="btn btn-dark btn-sm w-100 rounded-pill fw-bold">Xác nhận</button>
-                        </div>
-                    </form>
                 </div>
             </div>
 
@@ -415,7 +391,7 @@
                                     
                                     {% if is_super %}
                                     <a href="{% url 'admin_delete_store' store.id %}" class="btn btn-sm btn-outline-danger btn-circle shadow-sm" 
-                                    onclick="return confirm('⚠️ Cảnh báo: Đại vương có chắc chắn muốn san bằng chi nhánh {{ store.name }} này không? Dữ liệu tồn kho tại đây cũng sẽ bay màu đấy!');" title="Xóa chi nhánh">
+                                    onclick="return confirm('⚠️ Cảnh báo: Bạn có chắc muốn xoá {{ store.name }} này không? ');" title="Xóa chi nhánh">
                                         <i class="fa-solid fa-trash"></i>
                                     </a>
                                     {% endif %}
@@ -541,7 +517,7 @@
                     </div>
                     <h2 class="fw-bold text-dark">TRUY CẬP BỊ TỪ CHỐI</h2>
                     <p class="text-muted fs-5 mx-auto" style="max-width: 500px;">
-                        Chào <strong>{{ request.user.username }}</strong>, ngài không có quyền hạn để xem hoặc chỉnh sửa nội dung trong mục này. 
+                        Chào <strong>{{ request.user.username }}</strong>, Bạn không có quyền hạn để xem hoặc chỉnh sửa nội dung trong mục này. 
                     </p>
                     <div class="mt-4">
                         <button class="btn btn-primary rounded-pill px-4 py-2 fw-bold" onclick="showSection('section-stats', document.querySelector('.admin-nav-link'))">
@@ -549,11 +525,98 @@
                         </button>
                     </div>
                     <p class="mt-4 small text-secondary italic">
-                        * Vui lòng liên hệ <strong>Siêu Quản Trị</strong> để yêu cầu cấp quyền.
+                        * Vui lòng liên hệ <strong>admin</strong> để yêu cầu cấp quyền.
                     </p>
                 </div>  
             </div>
         </div>
+
+<div id="section-about" class="admin-section" style="display: none;">
+    <form action="{% url 'manage_about' %}" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <!-- 1. KHU VỰC SOẠN THẢO VĂN BẢN (CÓ TRÌNH SOẠN THẢO) -->
+        <div class="card border-0 shadow-sm p-4 mb-4 rounded-4">
+            <h5 class="fw-bold text-success mb-3"><i class="fa-solid fa-pen-nib me-2"></i>GIỚI THIỆU CHI TIẾT</h5>
+            <input type="text" name="title" class="form-control mb-3 fw-bold" placeholder="Nhập tiêu đề trang giới thiệu..." value="{{ about.title|default:'' }}">
+            
+            <!-- Đây là Textarea sẽ được CKEditor biến hình -->
+            <textarea name="description" id="oneway-editor" class="form-control" rows="10">{{ about.description|default:'' }}</textarea>
+        </div>
+
+        <!-- 2. KHU VỰC QUẢN LÝ ẢNH BANNER & GALLERY -->
+<div class="row">
+            <!-- Cột Banner -->
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm p-4 mb-4 rounded-4" style="background: #f8fafc;">
+                    <h5 class="fw-bold text-info mb-3"><i class="fa-solid fa-panorama me-2"></i>Ảnh Banner Động (Đầu trang)</h5>
+                    <p class="text-muted small">Giữ phím <b>Ctrl</b> để chọn nhiều ảnh cùng lúc.</p>
+                    <!-- Thêm sự kiện onchange để xem trước -->
+                    <input type="file" name="banners" class="form-control rounded-pill" multiple accept="image/*" onchange="previewMultiImages(this, 'preview-banners')">
+                    
+                    <!-- Khung chứa các ảnh nhỏ xem trước -->
+                    <div id="preview-banners" class="d-flex flex-wrap gap-2 mt-3"></div>
+                </div>
+            </div>
+            
+            <!-- Cột Gallery -->
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm p-4 mb-4 rounded-4" style="background: #f8fafc;">
+                    <h5 class="fw-bold text-warning mb-3"><i class="fa-solid fa-images me-2"></i>Ảnh Gallery (Cuối trang)</h5>
+                    <p class="text-muted small">Giữ phím <b>Ctrl</b> để chọn nhiều ảnh cùng lúc.</p>
+                    <input type="file" name="stories" class="form-control rounded-pill" multiple accept="image/*" onchange="previewMultiImages(this, 'preview-stories')">
+                    
+                    <!-- Khung chứa các ảnh nhỏ xem trước -->
+                    <div id="preview-stories" class="d-flex flex-wrap gap-2 mt-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold py-3 shadow-lg fs-5">
+            <i class="fa-solid fa-cloud-arrow-up me-2"></i>CẬP NHẬT TRANG GIỚI THIỆU
+        </button>
+    </form>
+</div>
+
+<!-- NHÚNG THƯ VIỆN SOẠN THẢO CKEDITOR -->
+<script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
+<script>
+    // Kích hoạt trình soạn thảo ngay khi trang được tải
+    document.addEventListener("DOMContentLoaded", function() {
+        if(document.getElementById('oneway-editor')) {
+            CKEDITOR.replace('oneway-editor', {
+                height: 400, // Chiều cao khung soạn thảo
+                removeButtons: 'PasteFromWord', // Lược bỏ nút thừa
+                filebrowserUploadUrl: "{% url 'upload_editor_image' %}?", 
+                imageUploadUrl: "{% url 'upload_editor_image' %}?",     
+                extraPlugins: 'uploadimage',
+                imageUploadUrl: '' 
+            });
+        }
+    });
+
+    function previewMultiImages(input, previewBoxId) {
+        const previewBox = document.getElementById(previewBoxId);
+        previewBox.innerHTML = ''; // Xóa ảnh cũ đi nếu chọn lại
+        
+        if (input.files) {
+            Array.from(input.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.style.width = '70px';
+                    img.style.height = '70px';
+                    img.style.objectFit = 'cover';
+                    img.className = 'rounded-3 shadow-sm border border-2 border-white mb-2';
+                
+                    previewBox.appendChild(img);
+                }
+                reader.readAsDataURL(file);
+            });
+        }
+    }
+</script>
 
     </div> </div> {% endblock %}
 
@@ -653,4 +716,7 @@
         }
     });
 </script>
+{% endblock %}
+
+{% block footer_section %}
 {% endblock %}

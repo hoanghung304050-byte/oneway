@@ -23,10 +23,10 @@
                         {% for item in items %}
                         <tr>
                             <td>
-                                {% if item.product.image_url %}
-                                <img src="{{ item.product.image_url }}" width="60" class="rounded me-2" alt="SP">
+                                {% if item.product.image %}
+                                    <img src="{{ item.product.image.url }}" width="60" height="60" style="object-fit: cover;" class="rounded me-2" alt="{{ item.product.name }}">
                                 {% else %}
-                                <img src="https://via.placeholder.com/60" width="60" class="rounded me-2" alt="No image">
+                                    <img src="https://dummyimage.com/60x60/e2e8f0/475569&text=No+Image" width="60" height="60" class="rounded me-2" alt="No image">
                                 {% endif %}
                                 <span class="fw-bold">{{ item.product.name }}</span>
                             </td>

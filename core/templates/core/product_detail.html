@@ -129,9 +129,9 @@
 
             <div class="text-dark small lh-lg">
                 {% if product.description %}
-                    {{ product.description|linebreaks }}
+                    {{ product.description|safe }}
                 {% else %}
-                    <p class="text-muted italic">Đang cập nhật nội dung mô tả cho siêu phẩm này...</p>
+                    <p class="text-muted italic">Đang cập nhật nội dung mô tả cho sản phẩm này...</p>
                 {% endif %}
             </div>
         </div>
@@ -168,7 +168,7 @@
                     <i class="fa-solid fa-circle-check fa-3x"></i>
                 </div>
                 <h6 class="fw-bold text-dark">Ngài đã đánh giá sản phẩm này rồi!</h6>
-                <p class="small text-muted mb-0">Hệ thống ONEWAY ghi nhận mỗi vị khách chỉ được đánh giá một lần để đảm bảo tính khách quan nhất. Cảm ơn ngài!</p>
+                <p class="small text-muted mb-0">Hệ thống ONEWAY ghi nhận mỗi vị khách chỉ được đánh giá một lần để đảm bảo tính khách quan nhất. Cảm ơn bạn!</p>
             </div>
         {% else %}
             <form method="POST" action="{% url 'product_detail' product.id %}" class="card p-4 shadow-sm border-0 rounded-4">
@@ -184,15 +184,15 @@
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label class="small fw-bold mb-1">Trải nghiệm của ngài</label>
-                    <textarea name="comment" class="form-control rounded-3" rows="4" placeholder="Sản phẩm này thế nào ngài?..." required></textarea>
+                    <label class="small fw-bold mb-1">Trải nghiệm của bạn</label>
+                    <textarea name="comment" class="form-control rounded-3" rows="4" placeholder="Sản phẩm này thế nào?..." required></textarea>
                 </div>
                 <button type="submit" class="btn btn-warning fw-bold w-100 rounded-pill shadow">GỬI NGAY</button>
             </form>
         {% endif %}
     {% else %}
         <div class="alert alert-info rounded-4 border-0 shadow-sm">
-            <i class="fa-solid fa-circle-exclamation me-2"></i> Ngài vui lòng <a href="{% url 'login' %}" class="fw-bold">đăng nhập</a> để gửi đánh giá nhé!
+            <i class="fa-solid fa-circle-exclamation me-2"></i>  vui lòng <a href="{% url 'login' %}" class="fw-bold">đăng nhập</a> để gửi đánh giá nhé!
         </div>
     {% endif %}
 </div>

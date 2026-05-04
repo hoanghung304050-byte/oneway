@@ -52,85 +52,197 @@
             <form id="storeForm" method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
                 
-                <div class="row g-4 mb-5">
-                    <div class="col-lg-5">
-                        <h5 class="fw-bold mb-3 text-success border-bottom pb-2"><i class="fa-solid fa-circle-info me-2"></i>Thông tin chi nhánh</h5>
+<div class="row g-4 mb-5">
+    <!-- CỘT TRÁI: THÔNG TIN VĂN BẢN (Gọn gàng hơn) -->
+    <div class="col-lg-4">
+        <div class="p-3 bg-white rounded-4 shadow-sm h-100">
+            <h5 class="fw-bold mb-3 text-success border-bottom pb-2">
+                <i class="fa-solid fa-circle-info me-2"></i>Thông tin chi nhánh
+            </h5>
+            
+            <div class="mb-3">
+                <label class="form-label small fw-bold">Tên cửa hàng</label>
+                {{ form.name }}
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-12 mb-3">
+                    <label class="form-label small fw-bold">Số điện thoại</label>
+                    {{ form.phone }}
+                </div>
+                <div class="col-12 mb-3">
+                    <label class="form-label small fw-bold">Đánh giá (1-5★)</label>
+                    {{ form.rating }}
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-6">
+                    <label class="form-label small fw-bold">Giờ mở cửa</label>
+                    {{ form.opening_time }}
+                </div>
+                <div class="col-6">
+                    <label class="form-label small fw-bold">Giờ đóng cửa</label>
+                    {{ form.closing_time }}
+                </div>
+            </div>
+
+            <div class="mb-0">
+                <label class="form-label text-danger small fw-bold">Tọa độ GIS (POINT)</label>
+                {{ form.location }}
+                <p class="text-muted" style="font-size: 10px;">*Tọa độ sẽ tự cập nhật khi bạn kéo ghim trên bản đồ.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- CỘT PHẢI: ĐỊA CHỈ & BẢN ĐỒ (Lấp đầy khoảng trống) -->
+    <div class="col-lg-8">
+        <div class="p-3 bg-white rounded-4 shadow-sm h-100">
+            <h5 class="fw-bold mb-3 text-success border-bottom pb-2">
+                <i class="fa-solid fa-map-location-dot me-2"></i>Vị trí thực tế
+            </h5>
+            
+            <div class="mb-3 position-relative">
+                <label class="fw-bold small mb-2">Địa chỉ cửa hàng</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0 rounded-start-pill">
+                        <i class="fa-solid fa-location-dot text-success"></i>
+                    </span>
+                    <!-- Dùng id_address để khớp với JS định vị -->
+                    <input type="text" id="id_address" name="address" 
+                           class="form-control border-start-0 rounded-end-pill" 
+                           placeholder="Nhập địa chỉ hoặc kéo ghim trên bản đồ..."
+                           value="{{ form.instance.address }}">
+                </div>
+                <div id="address-results" class="autocomplete-results shadow-sm"></div>
+            </div>
+
+            <!-- BẢN ĐỒ: Bây giờ nó sẽ nằm ngay cạnh thông tin -->
+            <div id="map" class="shadow-sm border rounded-4" style="height: 480px; width: 100%; z-index: 1;"></div>
+            
+            <button type="button" id="btn-find-on-map" class="btn btn-primary btn-sm w-100 mt-2 rounded-pill fw-bold shadow-sm">
+                <i class="fa-solid fa-magnifying-glass-location me-2"></i>Cập nhật vị trí từ địa chỉ trên
+            </button>
+        </div>
+    </div>
+</div>
+<!-- KHU VỰC 1: ẢNH ĐẠI DIỆN CHÍNH -->
+<div class="mb-5">
+    <h5 class="text-success fw-bold text-uppercase mb-3">
+        <i class="fas fa-camera"></i> Ảnh đại diện chi nhánh
+    </h5>
+    <div class="card shadow-sm border-0 bg-light">
+        <div class="card-body">
+            {% if form.instance.image %}
+                <div class="mb-3">
+                    <img src="{{ form.instance.image.url }}" class="img-thumbnail" style="width: 150px; height: 150px; object-fit: cover; border-radius: 10px;">
+                    <p class="text-muted mt-2 mb-0 small">Ảnh hiện tại</p>
+                </div>
+            {% endif %}
+            
+            <div class="form-group">
+                <label class="form-label fw-bold">Chọn ảnh đại diện mới:</label>
+                {{ form.image }} 
+                <small class="form-text text-muted d-block mt-1">Nên chọn ảnh vuông hoặc tỷ lệ 4:3.</small>
+            </div>
+
+            <!-- Vùng chứa ảnh xem trước cho ảnh đại diện -->
+            <div id="main-image-preview" class="mt-3"></div>
+        </div>
+    </div>
+</div>
+
+<!-- KHU VỰC 2: HÌNH ẢNH BANNER / ẢNH PHỤ -->
+<div class="mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="text-success fw-bold text-uppercase mb-0">
+            <i class="fas fa-images"></i> Hình ảnh banner chi nhánh
+        </h5>
+        <span class="badge bg-success rounded-pill px-3 py-2">Mẹo: Giữ Ctrl để chọn nhiều ảnh</span>
+    </div>
+    
+    <div class="card shadow-sm border-0 border-success border-start border-4">
+        <div class="card-body text-center py-4">
+            <label for="id_banners" class="btn btn-outline-success rounded-pill px-4 py-2 fw-bold" style="cursor: pointer;">
+                <i class="fas fa-cloud-upload-alt me-2"></i> Tải Ảnh Banner Lên (Tối đa 5 ảnh)
+            </label>
+            <input type="file" name="banners" id="id_banners" class="d-none" accept="image/*" multiple>
+            
+            <!-- Vùng chứa ảnh xem trước cho 5 ảnh banner -->
+            <div id="banner-preview-container" class="d-flex flex-wrap justify-content-center gap-3 mt-4"></div>
+            
+            <p class="text-muted mt-3 mb-0 small">Các hình ảnh này sẽ được hiển thị trong phần chi tiết của cửa hàng.</p>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        
+        // Xem trước ảnh đại diện chính
+        const mainImageInput = document.querySelector('input[name="image"]');
+        const mainPreviewContainer = document.getElementById('main-image-preview');
+
+        if (mainImageInput) {
+            mainImageInput.addEventListener('change', function(e) {
+                mainPreviewContainer.innerHTML = ''; 
+                const file = e.target.files[0];
+                if (file) {
+                    const imgUrl = URL.createObjectURL(file);
+                    const img = document.createElement('img');
+                    img.src = imgUrl;
+                    img.className = 'img-thumbnail border-primary shadow-sm mt-2';
+                    img.style.cssText = 'width: 150px; height: 150px; object-fit: cover; border-radius: 10px;';
+                    mainPreviewContainer.appendChild(img);
+                }
+            });
+        }
+
+        // Xem trước 5 ảnh banner phụ
+        const bannersInput = document.getElementById('id_banners');
+        const bannerPreviewContainer = document.getElementById('banner-preview-container');
+
+        if (bannersInput) {
+            bannersInput.addEventListener('change', function(e) {
+                bannerPreviewContainer.innerHTML = ''; 
+                const files = e.target.files;
+                
+                if (files.length > 5) {
+                    alert('Kính báo: Hệ thống chỉ nhận tối đa 5 ảnh banner cùng lúc!');
+                    this.value = ''; 
+                    return;
+                }
+
+                Array.from(files).forEach(file => {
+                    const imgUrl = URL.createObjectURL(file);
+                    const img = document.createElement('img');
+                    img.src = imgUrl;
+                    img.className = 'img-thumbnail shadow-sm';
+                    img.style.cssText = 'width: 120px; height: 120px; object-fit: cover; border-radius: 8px;';
+                    bannerPreviewContainer.appendChild(img);
+                });
+            });
+        }
+    });
+</script>
                         
-                        <div class="mb-3">
-                            <label class="form-label">Tên cửa hàng</label>
-                            {{ form.name }}
-                        </div>
-
-                        <div class="mb-3 position-relative">
-                            <label class="form-label text-primary">Địa chỉ cửa hàng</label>
-                            {{ form.address }}
-                            <div id="address-results" class="autocomplete-results shadow-sm"></div>
-                            <button type="button" id="btn-find-on-map" class="btn btn-primary btn-sm w-100 mt-2 rounded-pill fw-bold shadow-sm">
-                                <i class="fa-solid fa-magnifying-glass-location me-2"></i>Tìm địa điểm này
-                            </button>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-6"><label class="form-label">Số điện thoại</label>{{ form.phone }}</div>
-                            <div class="col-6"><label class="form-label">Đánh giá (1-5★)</label>{{ form.rating }}</div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-6"><label class="form-label">Giờ mở cửa</label>{{ form.opening_time }}</div>
-                            <div class="col-6"><label class="form-label">Giờ đóng cửa</label>{{ form.closing_time }}</div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label text-danger fw-bold">Tọa độ GIS (POINT)</label>
-                            {{ form.location }}
-                        </div>
-                    </div>
-
-                    <div class="col-lg-7">
-                        <h5 class="fw-bold mb-3 text-success border-bottom pb-2"><i class="fa-solid fa-map-location-dot me-2"></i>Vị trí thực tế</h5>
-                        <div id="map" class="shadow"></div>
-                    </div>
-                </div>
-
-                <div class="mt-5">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="fw-bold text-success mb-0"><i class="fa-solid fa-images me-2"></i>HÌNH ẢNH CHI NHÁNH</h5>
-                        <span class="badge bg-success text-white rounded-pill px-3 py-2">Mẹo: Chọn 5 ảnh ở ô chính để tải nhanh</span>
-                    </div>
-                    <div class="row g-3">
-                        <div class="col-lg-7">
-                            <div class="upload-box main-upload" onclick="document.getElementById('input-1').click()">
-                                <img id="pre-1" src="{% if form.instance.image %}{{ form.instance.image.url }}{% endif %}" class="preview-img" {% if not form.instance.image %}style="display:none;"{% endif %}>
-                                <div id="holder-1" class="upload-placeholder" {% if form.instance.image %}style="display:none;"{% endif %}>
-                                    <i class="fa-solid fa-camera-retro fa-3x"></i>
-                                    <p class="mt-2 fw-bold">Ảnh mặt tiền chi nhánh</p>
-                                </div>
-                                <input type="file" name="image" id="input-1" hidden multiple onchange="handleStoreBulkGallery(this)">
-                            </div>
-                        </div>
-                        <div class="col-lg-5">
-                            <div class="row g-2">
-                                {% for i in "2345" %}
-                                <div class="col-6">
-                                    <div class="upload-box sub-upload" onclick="document.getElementById('input-{{i}}').click()">
-                                        {% if i == "2" %}{% if form.instance.image_2 %}<img id="pre-2" src="{{ form.instance.image_2.url }}" class="preview-img">{% else %}<img id="pre-2" class="preview-img" style="display:none;"><div id="holder-2" class="upload-placeholder"><i class="fa-solid fa-plus"></i><p class="small mb-0">Ảnh 2</p></div>{% endif %}{% endif %}
-                                        {% if i == "3" %}{% if form.instance.image_3 %}<img id="pre-3" src="{{ form.instance.image_3.url }}" class="preview-img">{% else %}<img id="pre-3" class="preview-img" style="display:none;"><div id="holder-3" class="upload-placeholder"><i class="fa-solid fa-plus"></i><p class="small mb-0">Ảnh 3</p></div>{% endif %}{% endif %}
-                                        {% if i == "4" %}{% if form.instance.image_4 %}<img id="pre-4" src="{{ form.instance.image_4.url }}" class="preview-img">{% else %}<img id="pre-4" class="preview-img" style="display:none;"><div id="holder-4" class="upload-placeholder"><i class="fa-solid fa-plus"></i><p class="small mb-0">Ảnh 4</p></div>{% endif %}{% endif %}
-                                        {% if i == "5" %}{% if form.instance.image_5 %}<img id="pre-5" src="{{ form.instance.image_5.url }}" class="preview-img">{% else %}<img id="pre-5" class="preview-img" style="display:none;"><div id="holder-5" class="upload-placeholder"><i class="fa-solid fa-plus"></i><p class="small mb-0">Ảnh 5</p></div>{% endif %}{% endif %}
-                                        
-                                        <input type="file" name="image_{{i}}" id="input-{{i}}" hidden onchange="previewSingle(this, {{i}})">
+                        <!-- KHU VỰC HIỂN THỊ ẢNH XEM TRƯỚC VÀ ẢNH CŨ -->
+                        <div id="gallery-preview-container" class="row g-3">
+                            <!-- 1. HIỂN THỊ CÁC ẢNH ĐÃ LƯU TRONG KHO (gallery) TỪ TRƯỚC -->
+                            {% if store.gallery.all %}
+                                {% for img_obj in store.gallery.all %}
+                                    <div class="col-6 col-md-4 col-lg-3 position-relative existing-image">
+                                        <img src="{{ img_obj.image.url }}" class="img-fluid rounded-3 shadow-sm" style="height: 150px; width: 100%; object-fit: cover;">
                                     </div>
-                                </div>
                                 {% endfor %}
-                            </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
-
                 <div class="mt-5">
                     <h5 class="fw-bold text-success mb-3 border-bottom pb-2"><i class="fa-solid fa-pen-nib me-2"></i>GIỚI THIỆU CHI TIẾT</h5>
                     <div id="editor-container"></div>
-                    <input type="hidden" name="description" id="store_desc_input" value="{{ form.instance.description }}">
+                      <textarea name="description" id="store_desc_input" style="display:none;">{{ form.instance.description|safe }}</textarea>
+                    </div>
                 </div>
 
                 <div class="d-grid gap-2 mt-5">
@@ -152,18 +264,33 @@
     const GOONG_API_KEY = "4wc1mFYLefdK6o9zD6eo5HQuvfuJTZfsNXmUAYEk";
 
     document.addEventListener('DOMContentLoaded', function() {
-        // --- 1. KHỞI TẠO BẢN ĐỒ ---
+        // --- CÁC BIẾN TOÀN CỤC TRONG CUNG ĐIỆN ---
         var map = L.map('map').setView([10.762622, 106.660172], 13);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map);
 
         var marker = null;
-        var locationInput = document.querySelector('[name="location"]');
-        var addressInput = document.querySelector('[name="address"]');
-        var resultsBox = document.getElementById('address-results');
+        const locationInput = document.querySelector('[name="location"]');
+        const addressInput = document.querySelector('[name="address"]');
+        const resultsBox = document.getElementById('address-results');
 
-        function updateMarker(lat, lng, moveMap = true) {
+        // --- HÀM 1: DỊCH TỌA ĐỘ THÀNH ĐỊA CHỈ (REVERSE GEOCODING) ---
+        async function fetchAddress(lat, lng) {
+            if (!addressInput) return;
+            addressInput.value = "Đang xác định địa chỉ...";
+            try {
+                const res = await fetch(`https://rsapi.goong.io/Geocode?latlng=${lat},${lng}&api_key=${GOONG_API_KEY}`);
+                const data = await res.json();
+                if (data.results && data.results.length > 0) {
+                    addressInput.value = data.results[0].formatted_address;
+                }
+            } catch (err) {
+                addressInput.value = `Tọa độ: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+            }
+        }
+
+        // --- HÀM 2: CẬP NHẬT MARKER & TỌA ĐỘ (POSTGIS) ---
+        function updateMarker(lat, lng, moveMap = true, updateText = false) {
             if (!locationInput) return;
-            // WKT chuẩn cho PostGIS
             locationInput.value = `SRID=4326;POINT(${lng} ${lat})`; 
             
             if (marker) {
@@ -171,95 +298,24 @@
             } else {
                 marker = L.marker([lat, lng], {draggable: true}).addTo(map);
                 marker.on('dragend', function() {
-                    var p = marker.getLatLng();
-                    updateMarker(p.lat, p.lng, false);
+                    const p = marker.getLatLng();
+                    updateMarker(p.lat, p.lng, false, true); 
                 });
             }
+
+            if (updateText) fetchAddress(lat, lng);
             if (moveMap) map.flyTo([lat, lng], 17);
         }
 
-        // --- 2. TRỊ BỆNH NHẢY MARKER (Lấy 2 số cuối cùng) ---
-        if (locationInput && locationInput.value) {
-            var m = locationInput.value.match(/-?\d+\.?\d*/g);
+        // --- HÀM 3: XỬ LÝ DỮ LIỆU CŨ KHI LOAD TRANG ---
+        if (locationInput?.value) {
+            const m = locationInput.value.match(/-?\d+\.?\d*/g);
             if (m && m.length >= 2) {
-                // Lấy lat từ phần tử cuối, lng từ phần tử áp chót để né số 4326
-                var lat = parseFloat(m[m.length - 1]);
-                var lng = parseFloat(m[m.length - 2]);
-                updateMarker(lat, lng);
+                updateMarker(parseFloat(m[m.length - 1]), parseFloat(m[m.length - 2]));
             }
         }
 
-        // --- 3. QUILL EDITOR VỚI MULTI-IMAGE ICON ---
-        var quill = new Quill('#editor-container', {
-            modules: { toolbar: [[{'header': [1, 2, false]}], ['bold', 'italic', 'underline'], [{'list': 'ordered'}, {'list': 'bullet'}], ['link', 'image']] },
-            placeholder: 'Viết nội dung giới thiệu chi nhánh...',
-            theme: 'snow'
-        });
-        quill.root.innerHTML = document.getElementById('store_desc_input').value;
-
-        // Custom image handler
-        const toolbar = quill.getModule('toolbar');
-        toolbar.addHandler('image', function() {
-            const input = document.createElement('input');
-            input.setAttribute('type', 'file');
-            input.setAttribute('multiple', ''); 
-            input.click();
-            input.onchange = () => {
-                const files = input.files;
-                let range = quill.getSelection();
-                let index = range ? range.index : quill.getLength();
-                Array.from(files).forEach(file => {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        quill.insertEmbed(index, 'image', e.target.result);
-                        quill.insertText(index + 1, '\n');
-                        index += 2;
-                    };
-                    reader.readAsDataURL(file);
-                });
-            };
-        });
-
-        // --- 4. GALLERY HÀNG LOẠT ---
-        window.handleStoreBulkGallery = function(input) {
-            const files = input.files;
-            if (!files) return;
-            for (let i = 0; i < Math.min(files.length, 5); i++) {
-                const file = files[i];
-                const reader = new FileReader();
-                const slotId = i + 1;
-                reader.onload = function(e) {
-                    const img = document.getElementById('pre-' + slotId);
-                    const holder = document.getElementById('holder-' + slotId);
-                    img.src = e.target.result;
-                    img.style.display = 'block';
-                    if(holder) holder.style.display = 'none';
-
-                    if (slotId > 1) {
-                        const targetInput = document.getElementById('input-' + slotId);
-                        const dt = new DataTransfer();
-                        dt.items.add(file);
-                        targetInput.files = dt.files;
-                    }
-                }
-                reader.readAsDataURL(file);
-            }
-        };
-
-        window.previewSingle = function(input, id) {
-            if (input.files && input.files[0]) {
-                var reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('pre-' + id).src = e.target.result;
-                    document.getElementById('pre-' + id).style.display = 'block';
-                    const h = document.getElementById('holder-' + id);
-                    if(h) h.style.display = 'none';
-                }
-                reader.readAsDataURL(input.files[0]);
-            }
-        };
-
-        // --- 5. LOGIC AUTOCOMPLETE ---
+        // --- HÀM 4: AUTOCOMPLETE ĐỊA CHỈ ---
         let timeout = null;
         addressInput.addEventListener('input', function() {
             clearTimeout(timeout);
@@ -276,14 +332,14 @@
                                 const div = document.createElement('div');
                                 div.className = 'autocomplete-item';
                                 div.innerText = item.description;
-                                div.onclick = async function() {
+                                div.onclick = async () => {
                                     addressInput.value = item.description;
                                     resultsBox.style.display = 'none';
                                     const detailRes = await fetch(`https://rsapi.goong.io/Place/Detail?api_key=${GOONG_API_KEY}&place_id=${item.place_id}`);
                                     const detailData = await detailRes.json();
                                     if (detailData.result) {
                                         const loc = detailData.result.geometry.location;
-                                        updateMarker(loc.lat, loc.lng);
+                                        updateMarker(loc.lat, loc.lng, true, false); 
                                     }
                                 };
                                 resultsBox.appendChild(div);
@@ -293,43 +349,123 @@
             }, 300);
         });
 
-        // Submit form
-        document.getElementById('storeForm').onsubmit = function() {
+        // --- HÀM 5: CLICK BẢN ĐỒ ĐỂ GHIM ĐỊA CHỈ ---
+        map.on('click', (e) => updateMarker(e.latlng.lat, e.latlng.lng, false, true));
+        document.getElementById('btn-find-on-map').addEventListener('click', () => addressInput.dispatchEvent(new Event('input')));
+
+        // --- HÀM 6: QUILL EDITOR & MULTI-IMAGE ---
+        var quill = new Quill('#editor-container', {
+            modules: { toolbar: [[{'header': [1, 2, false]}], ['bold', 'italic', 'underline'], [{'list': 'ordered'}, {'list': 'bullet'}], ['link', 'image']] },
+            placeholder: 'Viết nội dung giới thiệu chi nhánh...',
+            theme: 'snow'
+        });
+        quill.root.innerHTML = document.getElementById('store_desc_input').value;
+
+        quill.getModule('toolbar').addHandler('image', function() {
+            const input = document.createElement('input');
+            input.setAttribute('type', 'file');
+            input.setAttribute('multiple', ''); 
+            input.click();
+            input.onchange = () => {
+                let range = quill.getSelection();
+                let index = range ? range.index : quill.getLength();
+                Array.from(input.files).forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        quill.insertEmbed(index, 'image', e.target.result);
+                        quill.insertText(index + 1, '\n');
+                        index += 2;
+                    };
+                    reader.readAsDataURL(file);
+                });
+            };
+        });
+
+        // --- HÀM 7: SUBMIT FORM ---
+        document.getElementById('storeForm').onsubmit = () => {
             document.getElementById('store_desc_input').value = quill.root.innerHTML;
             return true;
         };
 
-        map.on('click', function(e) { updateMarker(e.latlng.lat, e.latlng.lng, false); });
-        document.getElementById('btn-find-on-map').addEventListener('click', () => addressInput.dispatchEvent(new Event('input')));
-        
-        // Sửa lỗi xám màn hình bản đồ
         setTimeout(() => { map.invalidateSize(); }, 600);
     });
-    
-    // --- THIẾT QUÂN LUẬT: GIỚI HẠN GIỜ MỞ CỬA CHỈ TRONG BUỔI SÁNG (AM) ---
-    var openingTimeInput = document.querySelector('[name="opening_time"]');
 
+    // --- CÁC HÀM GALLERY (PHẢI ĐỂ NGOÀI ĐỂ HTML GỌI ONCHANGE) ---
+    window.handleStoreBulkGallery = function(input) {
+        if (!input.files) return;
+        for (let i = 0; i < Math.min(input.files.length, 5); i++) {
+            const file = input.files[i];
+            const reader = new FileReader();
+            const slotId = i + 1;
+            reader.onload = (e) => {
+                document.getElementById('pre-' + slotId).src = e.target.result;
+                document.getElementById('pre-' + slotId).style.display = 'block';
+                const holder = document.getElementById('holder-' + slotId);
+                if(holder) holder.style.display = 'none';
+                if (slotId > 1) {
+                    const dt = new DataTransfer();
+                    dt.items.add(file);
+                    document.getElementById('input-' + slotId).files = dt.files;
+                }
+            }
+            reader.readAsDataURL(file);
+        }
+    };
+
+    window.previewSingle = function(input, id) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('pre-' + id).src = e.target.result;
+                document.getElementById('pre-' + id).style.display = 'block';
+                const h = document.getElementById('holder-' + id);
+                if(h) h.style.display = 'none';
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    };
+
+    // GIỚI HẠN GIỜ AM ---
+    const openingTimeInput = document.querySelector('[name="opening_time"]');
     if (openingTimeInput) {
-        // 1. Ép trình duyệt chặn chọn giờ PM (Nếu trình duyệt hỗ trợ thuộc tính max)
         openingTimeInput.setAttribute('max', '11:59');
-
-        // 2. Kiểm tra gắt gao: Nếu người dùng cố tình nhập giờ PM, trẫm sẽ tự động đưa về AM
         openingTimeInput.addEventListener('change', function() {
-            var timeValue = this.value; // Giá trị thường là "HH:mm" (24h)
-            if (timeValue) {
-                var hours = parseInt(timeValue.split(':')[0]);
-                
-                // Nếu giờ >= 12 (tức là đã sang PM)
+            if (this.value) {
+                let hours = parseInt(this.value.split(':')[0]);
                 if (hours >= 12) {
-                    alert("Bẩm đại vương, giờ mở cửa chỉ được phép chọn buổi sáng (AM)! Hệ thống đã tự động điều chỉnh lại.");
-                    // Đưa về 08:00 hoặc giữ nguyên số phút nhưng đổi giờ thành AM (ví dụ 13:00 -> 01:00)
-                    var newHours = hours % 12;
-                    var minutes = timeValue.split(':')[1];
-                    this.value = (newHours < 10 ? '0' + newHours : newHours) + ':' + minutes;
+                    alert("giờ mở cửa phải là AM!");
+                    let newHours = hours % 12;
+                    this.value = (newHours < 10 ? '0' + newHours : newHours) + ':' + this.value.split(':')[1];
                 }
             }
         });
     }
 
+    // Hàm hiển thị các ảnh MỚI vừa được chọn để tải lên
+    function previewGalleryImages(input) {
+        const previewContainer = document.getElementById('gallery-preview-container');
+        const newImgs = previewContainer.querySelectorAll('.new-preview-img');
+        newImgs.forEach(el => el.remove());
+
+        if (input.files) {
+            Array.from(input.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const colDiv = document.createElement('div');
+                    colDiv.className = 'col-6 col-md-4 col-lg-3 new-preview-img mb-3';           
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'img-fluid rounded-3 shadow-sm border border-2 border-success';
+                    img.style.height = '150px';
+                    img.style.width = '100%';
+                    img.style.objectFit = 'cover';
+                    
+                    colDiv.appendChild(img);
+                    previewContainer.appendChild(colDiv);
+                }
+                reader.readAsDataURL(file);
+            });
+        }
+    }
 </script>
 {% endblock %}

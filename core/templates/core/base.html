@@ -24,7 +24,7 @@
         /* ========================================== */
         /* CSS GIAO DIỆN APP ĐIỆN THOẠI ( MOBILE )    */
         /* ========================================== */
-        /* Rào chắn an toàn: Ẩn hoàn toàn khối Mobile khi ở trên máy tính (>= 992px) */
+        /* Ẩn hoàn toàn khối Mobile khi ở trên máy tính (>= 992px) */
         @media (min-width: 992px) {
             .mobile-app-header-strict { display: none !important; }
         }
@@ -33,6 +33,7 @@
         @media (max-width: 991.98px) {
             .mobile-app-header-strict { z-index: 1030; }
         }
+
     </style>
     {% block extra_css %}{% endblock %}
 </head>
@@ -81,8 +82,48 @@
                 <span class="fs-4 fw-bold text-white tracking-wide" style="letter-spacing: 1px;">ONEWAY</span>
             </a>
             
-            {% if request.user.is_authenticated %}
-                <span class="badge bg-secondary rounded-pill"><i class="fa-solid fa-user me-1"></i> {{ request.user.username }}</span>
+{% if request.user.is_authenticated %}
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle rounded-pill text-white border-0" 
+                            style="background-color: rgba(255,255,255,0.1);" 
+                            type="button" 
+                            id="mobileUserMenu" 
+                            data-bs-toggle="dropdown" 
+                            aria-expanded="false">
+                        <i class="fa-solid fa-user text-warning me-1"></i> {{ request.user.username }}
+                    </button>
+                    
+                    <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2 rounded-3" aria-labelledby="mobileUserMenu" style="min-width: 200px; z-index: 9999;">
+                        <!-- Nút Quản trị -->
+                        {% if request.user.is_staff %}
+                        <li>
+                            <a class="dropdown-item py-2 fw-bold" href="{% url 'custom_admin_dashboard' %}">
+                                <i class="fa-solid fa-gear text-primary me-2"></i> Trang Quản Trị
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        <li>
+                            <a class="dropdown-item py-2 fw-bold" href="{% url 'cart' %}">
+                                <i class="fa-solid fa-cart-shopping text-warning me-2"></i> Giỏ Hàng
+                            </a>
+                        </li>
+                        
+                        <li>
+                            <a class="dropdown-item py-2 fw-bold" href="/gioi-thieu/">
+                                <i class="fa-solid fa-circle-info text-info me-2"></i> Giới Thiệu
+                            </a>
+                        </li>
+                        
+                        <li><hr class="dropdown-divider"></li>
+                        
+                        <li>
+                            <a class="dropdown-item py-2 fw-bold text-danger" href="{% url 'logout' %}">
+                                <i class="fa-solid fa-right-from-bracket me-2"></i> Đăng Xuất
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             {% else %}
                 <a href="{% url 'login' %}" class="text-white small text-decoration-none border border-secondary rounded-pill px-3 py-1">Đăng nhập</a>
             {% endif %}
@@ -116,7 +157,9 @@
 
 {% block content %}{% endblock %}
 
-<footer class="d-none d-lg-block"> <div class="container">
+{%block footer_section %}
+<footer class="d-none d-lg-block"> 
+    <div class="container">
         <div class="row">
             <div class="col-md-4 mb-3">
                 <h5 class="text-white fw-bold">ONEWAY STORE</h5>
@@ -139,6 +182,7 @@
         <div class="text-center small mt-3">&copy; 2026 ONEWAY STORE. Đồ án Website tích hợp GIS.</div>
     </div>
 </footer>
+{%endblock footer_section %}
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>var csrftoken = '{{ csrf_token }}';</script>

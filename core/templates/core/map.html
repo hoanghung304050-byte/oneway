@@ -134,7 +134,7 @@
                         {% for store in stores %}
                         <div class="store-item-card shadow-sm mb-3" 
                             style="cursor: pointer; border: 1px solid #eee; border-radius: 15px; padding: 10px;" 
-                            onclick="jumpToStore('{{ store.location.y }}', '{{ store.location.x }}', '{{ store.id }}')">
+                            onclick="selectStoreForRoute('{{ store.location.y }}', '{{ store.location.x }}', '{{ store.address|escapejs }}', '{{ store.id }}')">
                             
                             <div class="d-flex align-items-center">
                                 <div class="store-img-wrapper" style="width: 60px; height: 60px; border-radius: 10px; overflow: hidden; flex-shrink: 0;">
@@ -153,6 +153,11 @@
                                     <span class="badge {% if store.is_open %}bg-success{% else %}bg-danger{% endif %} rounded-pill" style="font-size: 8px;">
                                         {% if store.is_open %}MỞ CỬA{% else %}ĐÓNG CỬA{% endif %}
                                     </span>
+                                     <div class="text-end mt-2">
+                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill">
+                                            <i class="fa-solid fa-route"></i> Chọn dẫn đường
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -173,12 +178,10 @@
     var routingControl = null;
     var currentWaypoints = null;
     var stores = {{ stores_json|safe }};
-    
-    // MỚI: Biến lưu trữ 2 cái ghim kéo thả được (A và B)
+    var storeMarkers = {};
+
     var markerA = null; 
     var markerB = null; 
-
-    console.log("Dữ liệu cửa hàng từ vương quốc:", stores);
 
     function initMap() {
         if (map) return;
@@ -190,11 +193,10 @@
             maxZoom: 20
         }).addTo(map);
 
-        var storeSelector = document.getElementById('store-selector');
-        
-        stores.forEach(function(store, index) {
+        stores.forEach(function(store) {
             if (store.lat && store.lng) {
-                var marker = L.marker([store.lat, store.lng]).addTo(map);
+                var sMarker = L.marker([store.lat, store.lng]).addTo(map);
+                storeMarkers[store.id] = sMarker; 
 
                 let statusBadge = store.is_open ? 
                     `<span style="color:#28a745; font-weight:bold;">● ĐANG MỞ CỬA</span>` : 
@@ -206,18 +208,15 @@
                         <h6 style="margin:0; font-weight:bold; color:#0d6efd;">${store.name}</h6>
                         <div style="font-size:10px; margin:3px 0;">${statusBadge}</div>
                         <p style="font-size:10px; color:#666; margin:0;"><i class="fa-solid fa-location-dot"></i> ${store.address}</p>
-                        <div style="font-size:9px; color:#0d6efd; margin-top:5px;"><i>(Click để xem sản phẩm tại đây)</i></div>
+                        <div style="font-size:9px; color:#0d6efd; margin-top:5px;"><i>(Click để xem chi tiết)</i></div>
                     </div>
                 `;
 
-                marker.bindPopup(hoverContent, { closeButton: false });
-                marker.on('mouseover', function() { this.openPopup(); });
-                marker.on('mouseout', function() { this.closePopup(); });
-
-                marker.on('click', function() {
-                    if (store.id !== undefined) {
-                        window.location.href = "/store/" + store.id + "/";
-                    }
+                sMarker.bindPopup(hoverContent, { closeButton: false });
+                sMarker.on('mouseover', function() { this.openPopup(); });
+                sMarker.on('mouseout', function() { this.closePopup(); });
+                sMarker.on('click', function() {
+                    if (store.id !== undefined) window.location.href = "/store/" + store.id + "/";
                 });
             }
         });
@@ -226,12 +225,24 @@
         setupAutocomplete('end-input', 'end-results');
     }
 
-    // --- 2. TẠO GHIM KÉO THẢ & DỊCH NGƯỢC ĐỊA CHỈ (MỚI) ---
+    // --- 2. TỔNG HỢP LỆNH: NHẢY TỚI STORE & SET ĐIỂM ĐẾN (MỚI) ---
+    function selectStoreForRoute(lat, lng, address, storeId) {
+        // 1. Thực hiện bay tới vị trí cửa hàng
+        jumpToStore(lat, lng, storeId);
+
+        // 2. Điền thông tin vào ô Điểm B
+        const eInput = document.getElementById('end-input');
+        eInput.value = address;
+        eInput.dataset.latlng = JSON.stringify([parseFloat(lat), parseFloat(lng)]);
+
+        // 3. Thả ghim đỏ (Marker B) tại đó để đồng bộ hệ thống dẫn đường
+        placeDraggableMarker('B', parseFloat(lat), parseFloat(lng), 'end-input');
+    }
+
+    // --- 3. GHIM KÉO THẢ & DỊCH NGƯỢC ĐỊA CHỈ ---
     function placeDraggableMarker(type, lat, lng, inputId) {
         let loc = L.latLng(lat, lng);
         let markerToUpdate;
-        
-        // Đặt màu xanh cho điểm A, màu đỏ cho điểm B
         let iconUrl = type === 'A' ? 
             'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png' : 
             'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png';
@@ -242,7 +253,6 @@
             iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
         });
 
-        // Khởi tạo hoặc di chuyển ghim
         if (type === 'A') {
             if (markerA) map.removeLayer(markerA);
             markerA = L.marker(loc, {icon: customIcon, draggable: true}).addTo(map)
@@ -257,16 +267,12 @@
 
         map.flyTo(loc, 16);
 
-        // Sự kiện: Khi khách hàng thả ghim ra
         markerToUpdate.on('dragend', async function(e) {
             const position = markerToUpdate.getLatLng();
             const inputElement = document.getElementById(inputId);
-            
-            // Cập nhật tọa độ mới vào ô input
             inputElement.dataset.latlng = JSON.stringify([position.lat, position.lng]);
-            inputElement.value = "Đang định vị..."; // Hiệu ứng chờ
+            inputElement.value = "Đang định vị...";
 
-            // Gọi API Goong để dịch tọa độ thành tên đường
             try {
                 const res = await fetch(`https://rsapi.goong.io/Geocode?latlng=${position.lat},${position.lng}&api_key=${GOONG_API_KEY}`);
                 const data = await res.json();
@@ -282,12 +288,11 @@
         });
     }
 
-    // --- 3. AUTOCOMPLETE GỌI GHIM KÉO THẢ ---
+    // --- 4. AUTOCOMPLETE ---
     function setupAutocomplete(inputId, resultsId) {
         const input = document.getElementById(inputId);
         const results = document.getElementById(resultsId);
         if (!input || !results) return;
-
         const markerType = inputId === 'start-input' ? 'A' : 'B';
 
         let timeout = null;
@@ -316,8 +321,6 @@
                                     if (detailData.result) {
                                         const loc = detailData.result.geometry.location;
                                         input.dataset.latlng = JSON.stringify([loc.lat, loc.lng]);
-                                        
-                                        // Gọi hàm thả ghim có thể kéo được
                                         placeDraggableMarker(markerType, loc.lat, loc.lng, inputId);
                                     }
                                 };
@@ -330,7 +333,7 @@
         document.addEventListener('click', (e) => { if (e.target !== input) results.style.display = 'none'; });
     }
 
-    // --- 4. GPS CŨNG DÙNG GHIM KÉO THẢ ---
+    // --- 5. GPS ---
     function useCurrentLocationForA() {
         if (!navigator.geolocation) return alert("GPS không khả dụng!");
         navigator.geolocation.getCurrentPosition(pos => {
@@ -340,23 +343,18 @@
         });
     }
 
-    // --- 5. LOGIC ĐỊNH TUYẾN (Dẫn đường) ---
+    // --- 6. DẪN ĐƯỜNG ---
     function drawRoute(start, end) {
         if (routingControl) map.removeControl(routingControl);
-        
         currentWaypoints = [start, end];
         const mode = document.getElementById('travelMode').value;
         let profile = (mode === 'foot') ? 'routed-foot' : (mode === 'bike') ? 'routed-bike' : 'routed-car';
 
         routingControl = L.Routing.control({
             waypoints: [start, end],
-            router: L.Routing.osrmv1({ 
-                serviceUrl: `https://routing.openstreetmap.de/${profile}/route/v1` 
-            }),
-            lineOptions: { 
-                styles: [{color: mode === 'foot' ? '#ff5722' : '#0d6efd', weight: 6, opacity: 0.8}] 
-            },
-            createMarker: function() { return null; }, // Tắt marker mặc định của routing vì ta đã có marker riêng
+            router: L.Routing.osrmv1({ serviceUrl: `https://routing.openstreetmap.de/${profile}/route/v1` }),
+            lineOptions: { styles: [{color: mode === 'foot' ? '#ff5722' : '#0d6efd', weight: 6, opacity: 0.8}] },
+            createMarker: function() { return null; },
             addWaypoints: false, 
             show: false 
         }).addTo(map);
@@ -377,57 +375,18 @@
 
     async function routeAB() {
         const sInput = document.getElementById('start-input'), eInput = document.getElementById('end-input');
-        if (!sInput.dataset.latlng || !eInput.dataset.latlng) return alert("Vui lòng tìm và chọn địa chỉ trước khi dẫn đường!");
+        if (!sInput.dataset.latlng || !eInput.dataset.latlng) return alert("Vui lòng chọn địa chỉ điểm đi và đến!");
         drawRoute(L.latLng(JSON.parse(sInput.dataset.latlng)), L.latLng(JSON.parse(eInput.dataset.latlng)));
     }
 
-    function startRoutingToStore() {
-        navigator.geolocation.getCurrentPosition(pos => {
-            const uLoc = L.latLng(pos.coords.latitude, pos.coords.longitude);
-            const sel = document.getElementById('store-selector').value;
-            let dest;
-            if (sel === 'nearest') {
-                let minD = Infinity;
-                stores.forEach(s => {
-                    let d = calculateHaversine(pos.coords.latitude, pos.coords.longitude, s.lat, s.lng);
-                    if (d < minD) { minD = d; dest = s; }
-                });
-            } else { dest = stores[sel]; }
-            
-            if (dest) {
-                // Thả ghim A tại vị trí người dùng
-                placeDraggableMarker('A', pos.coords.latitude, pos.coords.longitude, 'start-input');
-                document.getElementById('start-input').value = "Vị trí của bạn";
-                document.getElementById('start-input').dataset.latlng = JSON.stringify([pos.coords.latitude, pos.coords.longitude]);
-                
-                // Set điểm B là store
-                document.getElementById('end-input').value = dest.name;
-                document.getElementById('end-input').dataset.latlng = JSON.stringify([dest.lat, dest.lng]);
-                placeDraggableMarker('B', dest.lat, dest.lng, 'end-input');
-
-                drawRoute(uLoc, L.latLng(dest.lat, dest.lng));
-            }
-        });
-    }
-
-    function calculateHaversine(lat1, lon1, lat2, lon2) {
-        const R = 6371; 
-        const dLat = (lat2 - lat1) * Math.PI / 180;
-        const dLon = (lon2 - lon1) * Math.PI / 180;
-        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    }
-
+    // --- 7. TIỆN ÍCH KHÁC ---
     function swapLocations() {
         const s = document.getElementById('start-input'), e = document.getElementById('end-input');
         const tV = s.value, tC = s.dataset.latlng;
         s.value = e.value; s.dataset.latlng = e.dataset.latlng;
         e.value = tV; e.dataset.latlng = tC;
-        
-        // Đổi màu ghim nếu chúng tồn tại
         if(markerA && markerB) {
-            const posA = markerA.getLatLng();
-            const posB = markerB.getLatLng();
+            const posA = markerA.getLatLng(), posB = markerB.getLatLng();
             placeDraggableMarker('A', posB.lat, posB.lng, 'start-input');
             placeDraggableMarker('B', posA.lat, posA.lng, 'end-input');
         }
@@ -446,29 +405,19 @@
         map.flyTo([10.762622, 106.660172], 13);
     }
 
-    document.addEventListener('DOMContentLoaded', initMap);
+    function jumpToStore(lat, lng, storeId) {
+        var latitude = parseFloat(lat);
+        var longitude = parseFloat(lng);
+        if (isNaN(latitude) || isNaN(longitude)) return;
 
-        function jumpToStore(lat, lng, storeId) {
-            // Chuyển sang kiểu số để chắc chắn Leaflet hiểu
-            var latitude = parseFloat(lat);
-            var longitude = parseFloat(lng);
+        map.flyTo([latitude, longitude], 18, { animate: true, duration: 1.5 });
 
-            if (isNaN(latitude) || isNaN(longitude)) {
-                console.error("Bẩm đại vương, tọa độ bị rỗng rồi!");
-                return;
-            }
-
-            map.flyTo([latitude, longitude], 18, {
-                animate: true,
-                duration: 1.5
-            });
-
-            if (storeMarkers && storeMarkers[storeId]) {
-                setTimeout(() => {
-                    storeMarkers[storeId].openPopup();
-                }, 1500);
-            }
+        // Mở popup từ sổ cái storeMarkers
+        if (storeMarkers && storeMarkers[storeId]) {
+            setTimeout(() => { storeMarkers[storeId].openPopup(); }, 1500);
         }
+    }
 
+    document.addEventListener('DOMContentLoaded', initMap);
 </script>
 {% endblock %}

@@ -1,31 +1,82 @@
 {% extends 'core/home.html' %}
 {% block content %}
+<style>
+    .description-content img {
+        max-width: 100% !important;
+        height: auto !important;
+        border-radius: 10px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .description-content {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+</style>
+
 <div class="container mt-4">
-    <div id="storeHero" class="carousel slide rounded-4 overflow-hidden shadow mb-5" data-bs-ride="carousel">
+    <!-- Carousel Hero Section -->
+<div id="storeHero" class="carousel slide rounded-4 overflow-hidden shadow mb-5" data-bs-ride="carousel">
         <div class="carousel-inner">
-            <div class="carousel-item active">
-                <img src="{{ store.image.url }}" class="d-block w-100" style="height: 400px; object-fit: cover;">
-                <div class="carousel-caption bg-dark bg-opacity-50 rounded">
-                    <h3>{{ store.name }}</h3>
-                    <p>{{ store.address }}</p>
+            {% for item in store.gallery.all %}
+                <div class="carousel-item {% if forloop.first %}active{% endif %}" data-bs-interval="3000">
+                    <img src="{{ item.image.url }}" class="d-block w-100" style="height: 400px; object-fit: cover;" alt="{{ store.name }}">
+                    <div class="carousel-caption bg-dark bg-opacity-50 rounded p-3">
+                        <h3 class="fw-bold">{{ store.name }}</h3>
+                        <p class="mb-0">{{ store.address }}</p>
+                    </div>
                 </div>
-            </div>
-            </div>
+                
+            {% empty %}
+                <div class="carousel-item active">
+                    <!-- Nếu có ảnh đại diện thì dùng, không thì dùng ảnh xám -->
+                    {% if store.image %}
+                        <img src="{{ store.image.url }}" class="d-block w-100" style="height: 400px; object-fit: cover;" alt="{{ store.name }}">
+                    {% else %}
+                        <img src="https://via.placeholder.com/1200x400?text=ONEWAY+STORE+COMING+SOON" class="d-block w-100" style="height: 400px; object-fit: cover;" alt="No image">
+                    {% endif %}
+                    <div class="carousel-caption bg-dark bg-opacity-50 rounded p-3">
+                        <h3 class="fw-bold">{{ store.name }}</h3>
+                        <p class="mb-0">{{ store.address }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+
+        </div>
+
+        <!-- 2 NÚT BẤM CHUYỂN SLIDE TRÁI / PHẢI -->
+        <button class="carousel-control-prev" type="button" data-bs-target="#storeHero" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true" style="background-color: rgba(0,0,0,0.5); border-radius: 50%; padding: 20px;"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#storeHero" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true" style="background-color: rgba(0,0,0,0.5); border-radius: 50%; padding: 20px;"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
     </div>
 
     <div class="row">
+        <!-- Thông tin chi nhánh -->
         <div class="col-md-4">
             <div class="card border-0 shadow-sm p-4 mb-4 rounded-4">
                 <h4 class="fw-bold text-primary">Thông tin chi nhánh</h4>
                 <p class="text-muted"><i class="fa-solid fa-star text-warning"></i> {{ store.rating }} Đánh giá</p>
                 <hr>
-                <p><strong>Mô tả:</strong> {{ store.description }}</p>
-                <div class="alert alert-info">
+                
+                <!-- Bọc mô tả vào một div có class description-content -->
+                <div class="description-content">
+                    <p><strong>Mô tả:</strong></p>
+                    {{ store.description|safe }}
+                </div>
+
+                <div class="alert alert-info mt-3">
                     <i class="fa-solid fa-clock"></i> Giờ mở cửa: 08:30 - 21:30
                 </div>
             </div>
         </div>
 
+        <!-- Danh sách sản phẩm -->
         <div class="col-md-8">
             <h4 class="fw-bold mb-4">Sản phẩm sẵn có tại quầy</h4>
             <div class="row g-3">
@@ -36,7 +87,7 @@
                             {% if item.product.image %}
                             <img src="{{ item.product.image.url }}" style="width: 80px; height: 80px; object-fit: contain;">
                             {% else %}
-                                <img src="https://via.placeholder.com/35x35?text=SP" width="35" class="rounded me-2 shadow-sm">
+                            <img src="https://via.placeholder.com/80x80?text=SP" width="80" class="rounded me-2 shadow-sm">
                             {% endif %}
                             <div class="ms-3">
                                 <h6 class="fw-bold mb-1">{{ item.product.name }}</h6>
@@ -55,8 +106,8 @@
                     </div>
                 </div>
                 {% empty %}
-                <div class="text-center py-5">
-                    <p class="text-muted italic">Chi nhánh này đang trong quá trình nhập hàng mới. Đại vương hãy quay lại sau nhé!</p>
+                <div class="text-center py-5 w-100">
+                    <p class="text-muted italic">Chi nhánh này đang trong quá trình nhập hàng mới. Bạn hãy quay lại sau nhé!</p>
                 </div>
                 {% endfor %}
             </div>

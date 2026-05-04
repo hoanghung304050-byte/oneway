@@ -59,7 +59,7 @@
                     </div>
                     <div class="col-md-4">
                         <label class="fw-bold text-secondary mb-1">Giá bán (₫)</label>
-                        <input type="number" name="price" class="form-control form-control-lg rounded-pill px-4 fw-bold text-danger" value="{{ product.price }}">
+                        <input type="number" name="price" class="form-control form-control-lg rounded-pill px-4 fw-bold text-danger" value="{{ form.price.value|default:'' }}">
                     </div>
                 </div>
 

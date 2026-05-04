@@ -1,197 +1,240 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Giới thiệu - ONEWAY Store</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- THƯ VIỆN HIỆU ỨNG (AOS) & FONT AWESOME -->
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    :root {
+        --oneway-dark: #0f172a;
+        --oneway-gold: #f59e0b; 
+        --oneway-light: #f8fafc;
+    }
     
-    <style>
-        /* CSS Tùy chỉnh cho giao diện hiện đại */
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; }
-        
-        /* Cấu hình Banner Carousel */
-        .carousel-item { height: 60vh; min-height: 400px; background: #000; color: white; position: relative; }
-        .carousel-image { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.6; }
-        .carousel-caption { bottom: 20%; z-index: 2; text-align: left; max-width: 600px; }
-        .carousel-caption h1 { font-size: 3.5rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
-        .carousel-caption p { font-size: 1.2rem; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); }
-        
-        /* Bố cục chéo và bóng đổ */
-        .story-section { padding: 80px 0; background: white; }
-        .img-story { border-radius: 20px; box-shadow: 0 15px 30px rgba(0,0,0,0.15); transition: transform 0.4s ease; }
-        .img-story:hover { transform: scale(1.02); }
-        
-        /* Dải thông số (Stats Ribbon) */
-        .stats-ribbon { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 50px 0; }
-        .stat-number { font-size: 3rem; font-weight: 800; color: #0dcaf0; }
-        
-        /* Thẻ tính năng (Feature Cards) */
-        .features-section { padding: 80px 0; }
-        .feature-card { background: white; border-radius: 15px; padding: 40px 30px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.05); transition: all 0.3s ease; border-bottom: 5px solid transparent; height: 100%; }
-        .feature-card:hover { transform: translateY(-15px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); border-bottom: 5px solid #0d6efd; }
-        .feature-icon { font-size: 50px; color: #0d6efd; margin-bottom: 20px; }
-        
-        /* Banner CTA (Call To Action) gọi đến hệ thống GIS */
-        .cta-gis { background: url('https://images.unsplash.com/photo-1524661135-423995f22d0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover fixed; position: relative; padding: 100px 0; color: white; text-align: center; }
-        .cta-gis::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); }
-        .cta-content { position: relative; z-index: 2; }
-    </style>
-</head>
-<body>
+    body { background-color: #fff; font-family: 'Inter', sans-serif; overflow-x: hidden; }
 
-<a href="/" class="btn-back-home text-decoration-none">
-        <i class="fa-solid fa-chevron-left"></i>
-    </a>
-    <style>
-        .btn-back-home {
-            position: absolute;
-            top: 25px;
-            left: 25px;
-            z-index: 1050;
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            background: rgba(0, 0, 0, 0.3); /* Nền đen mờ */
-            backdrop-filter: blur(8px);     /* Hiệu ứng kính */
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            transition: all 0.3s ease;
-        }
-        .btn-back-home:hover {
-            background: rgba(255, 255, 255, 0.3);
-            color: white;
-            transform: scale(1.1); /* Phóng to nhẹ khi di chuột */
-        }
-    </style>
+    /* 1. HERO BANNER SANG TRỌNG */
+    .hero-banner-wrapper { padding: 40px 15px; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); }
+    .luxury-slider {
+        max-width: 1300px; margin: 0 auto;
+        border-radius: 30px; overflow: hidden;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        border: 4px solid #fff;
+    }
+    .carousel-item { height: 500px; }
+    .carousel-item img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.9); }
 
-    <div id="heroCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel">
-        <div class="carousel-indicators">
-            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active"></button>
-            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1"></button>
-            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2"></button>
-        </div>
-        <div class="carousel-inner">
-            <div class="carousel-item active">
-                <img src="https://images.unsplash.com/photo-1616348436168-de43ad0db179?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" class="carousel-image" alt="iPhone 15 Pro">
-                <div class="container h-100 position-relative">
-                    <div class="carousel-caption">
-                        <span class="badge bg-primary mb-2 px-3 py-2 fs-6 rounded-pill">Mới Nhất 2026</span>
-                        <h1>CÔNG NGHỆ ĐỈNH CAO</h1>
-                        <p>Trải nghiệm các dòng siêu phẩm Flagship mới nhất với mức giá và chính sách hậu mãi tốt nhất thị trường.</p>
-                        <a href="/" class="btn btn-primary btn-lg mt-3 px-5 rounded-pill">Mua Ngay</a>
+    .milk-carton-box {
+        max-height: 450px; 
+        overflow-y: auto; 
+        background: #f8fafc; 
+        border: 2px solid #e2e8f0; 
+        border-radius: 24px; 
+        padding: 30px; 
+        box-shadow: inset 0 5px 15px rgba(0,0,0,0.03); 
+    }
+
+    (Scrollbar) 
+    .milk-carton-box::-webkit-scrollbar {
+        width: 8px; 
+    }
+    .milk-carton-box::-webkit-scrollbar-track {
+        background: transparent; 
+        margin: 10px 0;
+    }
+    .milk-carton-box::-webkit-scrollbar-thumb {
+        background: var(--oneway-gold); 
+        border-radius: 10px; 
+    }
+
+    .milk-carton-box img {
+        max-width: 100% !important; 
+        height: auto !important;   
+        display: block;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    
+    /* 2. CÂU CHUYỆN THƯƠNG HIỆU */
+    .story-section { padding: 100px 0; background: #fff; }
+    .title-gradient {
+        background: linear-gradient(to right, var(--oneway-dark), #334155);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        font-weight: 900; font-size: 3.5rem; letter-spacing: -1px;
+    }
+    .description-text { font-size: 1.15rem; color: #475569; line-height: 1.8; text-align: justify; }
+    .gold-line { width: 80px; height: 5px; background: var(--oneway-gold); border-radius: 5px; margin: 20px 0; }
+
+    /* 3. GIÁ TRỊ CỐT LÕI (WHY CHOOSE US) */
+    .core-values-section { padding: 80px 0; background: var(--oneway-dark); color: #fff; }
+    .value-card {
+        padding: 40px 30px; background: rgba(255,255,255,0.05);
+        border-radius: 20px; transition: all 0.3s ease;
+        border: 1px solid rgba(255,255,255,0.1);
+        height: 100%;
+    }
+    .value-card:hover { transform: translateY(-10px); background: rgba(255,255,255,0.1); border-color: var(--oneway-gold); }
+    .value-icon { font-size: 3rem; color: var(--oneway-gold); margin-bottom: 20px; }
+
+    /* 4. GALLERY ẢNH LƯỚI HIỆN ĐẠI */
+    .gallery-section { padding: 100px 0; background: var(--oneway-light); }
+    .bento-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px; max-width: 1300px; margin: 0 auto; padding: 0 15px;
+    }
+    .bento-item { border-radius: 24px; overflow: hidden; height: 350px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); position: relative; }
+    .bento-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+    .bento-item:hover img { transform: scale(1.05); }
+    /* Hiệu ứng mờ overlay khi hover */
+    .bento-item::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.4), transparent); opacity: 0; transition: opacity 0.3s ease; }
+    .bento-item:hover::after { opacity: 1; }
+</style>
+
+<!-- ================= PHẦN 1: BANNER ĐỘNG ================= -->
+<section class="hero-banner-wrapper">
+    <div class="luxury-slider" data-aos="zoom-out" data-aos-duration="1200">
+        <div id="onewayCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel">
+            <!-- Nút chỉ báo dưới đáy -->
+            <div class="carousel-indicators">
+                {% for img in banners %}
+                <button type="button" data-bs-target="#onewayCarousel" data-bs-slide-to="{{ forloop.counter0 }}" class="{% if forloop.first %}active{% endif %}"></button>
+                {% endfor %}
+            </div>
+            
+            <div class="carousel-inner">
+                {% for img in banners %}
+                <div class="carousel-item {% if forloop.first %}active{% endif %}" data-bs-interval="3000">
+                    <img src="{{ img.image.url }}" alt="Oneway Banner">
+                </div>
+                {% empty %}
+                <div class="carousel-item active">
+                    <div style="background:#1e293b; color:#94a3b8; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                        <i class="fa-solid fa-images fa-4x mb-3"></i>
+                        <h3>Đang chờ admin thêm Banner...</h3>
                     </div>
                 </div>
+                {% endfor %}
             </div>
-            <div class="carousel-item">
-                <img src="https://images.unsplash.com/photo-1556656793-08538906a9f8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" class="carousel-image" alt="Cửa hàng hiện đại">
-                <div class="container h-100 position-relative">
-                    <div class="carousel-caption">
-                        <h1>UY TÍN VÀ CHẤT LƯỢNG</h1>
-                        <p>Hệ thống chuỗi bán lẻ chuyên nghiệp, cam kết 100% sản phẩm chính hãng, bảo hành toàn quốc.</p>
-                    </div>
-                </div>
-            </div>
+            
+            <!-- Nút bấm trái phải -->
+            <button class="carousel-control-prev" type="button" data-bs-target="#onewayCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" style="background-color: rgba(0,0,0,0.5); border-radius: 50%; padding: 20px;"></span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#onewayCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" style="background-color: rgba(0,0,0,0.5); border-radius: 50%; padding: 20px;"></span>
+            </button>
         </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon"></span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
-            <span class="carousel-control-next-icon"></span>
-        </button>
     </div>
+</section>
 
-    <section class="story-section">
-        <div class="container">
-            <div class="row align-items-center mb-5">
-                <div class="col-lg-6 mb-4 pe-lg-5">
-                    <h6 class="text-primary fw-bold text-uppercase">Về ONEWAY Store</h6>
-                    <h2 class="display-6 fw-bold mb-4">Hành trình mang công nghệ đến mọi nhà</h2>
-                    <p class="fs-5 text-secondary">Khởi đầu từ một cửa hàng nhỏ, ONEWAY đã vươn mình trở thành điểm đến tin cậy hàng đầu cho những tín đồ yêu thích công nghệ và điện thoại thông minh.</p>
-                    <p class="text-secondary">Chúng tôi không chỉ bán một thiết bị, chúng tôi trao gửi sự an tâm. Mọi quy trình từ nhập hàng, kiểm định, đến tư vấn và chăm sóc sau bán hàng đều được chuẩn hóa ở mức khắt khe nhất.</p>
-                    <ul class="list-unstyled mt-4 fs-5">
-                        <li class="mb-2"><i class="fa-solid fa-check text-success me-2"></i> Đối tác chiến lược của Apple, Samsung, Xiaomi.</li>
-                        <li class="mb-2"><i class="fa-solid fa-check text-success me-2"></i> Đội ngũ kỹ thuật viên đạt chuẩn quốc tế.</li>
-                        <li class="mb-2"><i class="fa-solid fa-check text-success me-2"></i> Mạng lưới cửa hàng phủ sóng toàn quốc.</li>
-                    </ul>
+<!-- ================= PHẦN 2: CÂU CHUYỆN & TẦM NHÌN ================= -->
+<section class="story-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-5 mb-lg-0" data-aos="fade-right">
+                <h6 class="text-uppercase fw-bold" style="color: var(--oneway-gold); letter-spacing: 2px;">Về Chúng Tôi</h6>
+                <h1 class="title-gradient mb-3">{{ about.title|default:"Hành Trình Oneway Store" }}</h1>
+                <div class="gold-line"></div>
+                <div class="milk-carton-box mt-4 description-text">
+                    {{ about.description|safe }}
                 </div>
-                <div class="col-lg-6">
-                    <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Đội ngũ ONEWAY" class="img-fluid img-story">
-                </div>
+                <a href="/" class="btn btn-dark rounded-pill px-5 py-3 mt-4 fw-bold shadow-sm" style="transition: 0.3s;">
+                    Khám Phá Sản Phẩm <i class="fa-solid fa-arrow-right ms-2"></i>
+                </a>
             </div>
-        </div>
-    </section>
-
-    <section class="stats-ribbon text-center">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-3 col-6 mb-4 mb-md-0">
-                    <div class="stat-number">5+</div>
-                    <div class="fs-5 mt-2">Năm kinh nghiệm</div>
-                </div>
-                <div class="col-md-3 col-6 mb-4 mb-md-0">
-                    <div class="stat-number">50K+</div>
-                    <div class="fs-5 mt-2">Khách hàng tin chọn</div>
-                </div>
-                <div class="col-md-3 col-6">
-                    <div class="stat-number">24/7</div>
-                    <div class="fs-5 mt-2">Hỗ trợ kỹ thuật</div>
-                </div>
-                <div class="col-md-3 col-6">
-                    <div class="stat-number">100%</div>
-                    <div class="fs-5 mt-2">Chính hãng nguyên seal</div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="features-section bg-light">
-        <div class="container">
-            <div class="text-center mb-5">
-                <h2 class="fw-bold display-6">Tại sao chọn chúng tôi?</h2>
-                <div class="mx-auto mt-3" style="width: 80px; height: 4px; background-color: #0d6efd; border-radius: 2px;"></div>
-            </div>
-            <div class="row g-4">
-                <div class="col-lg-4 col-md-6">
-                    <div class="feature-card">
-                        <i class="fa-solid fa-medal feature-icon"></i>
-                        <h4 class="fw-bold">Chất lượng tuyệt đối</h4>
-                        <p class="text-secondary mt-3">Cam kết đền bù gấp 10 lần nếu phát hiện hàng giả, hàng nhái. Mọi sản phẩm đều có hóa đơn VAT và bảo hành chính hãng.</p>
-                    </div>
-                </div>
-                <div class="col-lg-4 col-md-6">
-                    <div class="feature-card">
-                        <i class="fa-solid fa-wallet feature-icon"></i>
-                        <h4 class="fw-bold">Giá cả cạnh tranh</h4>
-                        <p class="text-secondary mt-3">Luôn có các chương trình khuyến mãi, thu cũ đổi mới trợ giá tốt nhất thị trường, hỗ trợ trả góp 0% lãi suất.</p>
-                    </div>
-                </div>
-                <div class="col-lg-4 col-md-6">
-                    <div class="feature-card">
-                        <i class="fa-solid fa-truck-fast feature-icon"></i>
-                        <h4 class="fw-bold">Giao hàng siêu tốc</h4>
-                        <p class="text-secondary mt-3">Giao hàng miễn phí tận nhà trong vòng 2 giờ nội thành. Hỗ trợ thanh toán sau khi kiểm tra máy thành công.</p>
+            <div class="col-lg-6" data-aos="fade-left">
+                <!-- Lấy tấm ảnh "story" đầu tiên làm ảnh đại diện cho phần này -->
+                <div class="position-relative">
+                    {% if stories %}
+                        <img src="{{ stories.0.image.url }}" class="img-fluid rounded-4 shadow-lg" alt="Oneway Store">
+                    {% else %}
+                        <img src="https://images.unsplash.com/photo-1601784551446-20c9e07cd56e?q=80&w=1000&auto=format&fit=crop" class="img-fluid rounded-4 shadow-lg" alt="Demo Image">
+                    {% endif %}
+                    
+                    <!-- Box thông số trôi nổi -->
+                    <div class="position-absolute bg-white p-4 rounded-4 shadow-lg text-center" style="bottom: -30px; left: -30px; border-bottom: 5px solid var(--oneway-gold);">
+                        <h2 class="fw-bold mb-0" style="color: var(--oneway-dark);">100%</h2>
+                        <p class="text-muted mb-0 fw-bold">Chính Hãng</p>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <section class="cta-gis">
-        <div class="container cta-content">
-            <h2 class="display-5 fw-bold mb-4">Tìm Cửa Hàng Gần Bạn Nhất!</h2>
-            <p class="lead mb-5 mx-auto" style="max-width: 700px;">Hệ thống GIS tích hợp bản đồ thông minh độc quyền của ONEWAY sẽ giúp bạn định vị, xem tình trạng mở/đóng cửa và dẫn đường đến chi nhánh một cách chính xác nhất.</p>
-            <a href="/map/" class="btn btn-outline-light btn-lg px-5 py-3 rounded-pill fw-bold">
-                <i class="fa-solid fa-location-crosshairs me-2"></i> Mở Bản Đồ ONEWAY
-            </a>
+<!-- ================= PHẦN 3: TẠI SAO CHỌN ONEWAY ================= -->
+<section class="core-values-section">
+    <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h2 class="fw-bold" style="font-size: 2.5rem;">Tiêu Chuẩn <span style="color: var(--oneway-gold);">Oneway</span></h2>
+            <p class="text-secondary mt-2">Cam kết mang lại trải nghiệm công nghệ đỉnh cao nhất</p>
         </div>
-    </section>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="100">
+                <div class="value-card text-center">
+                    <i class="fa-solid fa-medal value-icon"></i>
+                    <h5 class="fw-bold mb-3">Chất Lượng Zin 100%</h5>
+                    <p class="text-light opacity-75 small">Nói không với hàng giả, hàng dựng. Mọi máy đều được kiểm định khắt khe qua 12 bước.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="200">
+                <div class="value-card text-center">
+                    <i class="fa-solid fa-tags value-icon"></i>
+                    <h5 class="fw-bold mb-3">Giá Trị Tốt Nhất</h5>
+                    <p class="text-light opacity-75 small">Tự hào mang đến mức giá cạnh tranh nhất thị trường cùng vô vàn ưu đãi độc quyền.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="300">
+                <div class="value-card text-center">
+                    <i class="fa-solid fa-shield-halved value-icon"></i>
+                    <h5 class="fw-bold mb-3">Bảo Hành Trọn Đời</h5>
+                    <p class="text-light opacity-75 small">Lỗi là đổi mới. Hỗ trợ phần mềm trọn đời máy, bảo hành phần cứng dài hạn, minh bạch.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="400">
+                <div class="value-card text-center">
+                    <i class="fa-solid fa-headset value-icon"></i>
+                    <h5 class="fw-bold mb-3">Hỗ Trợ Tận Tâm</h5>
+                    <p class="text-light opacity-75 small">Đội ngũ kỹ thuật viên và CSKH chuyên nghiệp, sẵn sàng giải đáp mọi thắc mắc 24/7.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+<!-- ================= PHẦN 4: KHÔNG GIAN ONEWAY ================= -->
+<section class="gallery-section">
+    <div class="container text-center mb-5" data-aos="fade-up">
+        <h2 class="fw-bold" style="font-size: 2.5rem; color: var(--oneway-dark);">Không Gian Trải Nghiệm</h2>
+        <p class="text-muted mt-2">Nơi công nghệ hòa quyện cùng sự tinh tế</p>
+    </div>
+    
+    <div class="bento-grid">
+        {% for img in stories %}
+            <!-- Bỏ qua ảnh đầu tiên vì đã dùng ở phần Câu chuyện phía trên -->
+            {% if not forloop.first %}
+            <div class="bento-item" data-aos="zoom-in" data-aos-delay="{{ forloop.counter0 }}00">
+                <img src="{{ img.image.url }}" alt="Oneway Gallery">
+            </div>
+            {% endif %}
+        {% empty %}
+            <!-- Demo Layout khi chưa có ảnh -->
+            <div class="bento-item"><img src="https://images.unsplash.com/photo-1556656793-08538906a9f8?q=80&w=800&auto=format&fit=crop"></div>
+            <div class="bento-item"><img src="https://images.unsplash.com/photo-1616348436168-de43ad0db179?q=80&w=800&auto=format&fit=crop"></div>
+            <div class="bento-item"><img src="https://images.unsplash.com/photo-1541560052-5e137f229371?q=80&w=800&auto=format&fit=crop"></div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Scripts cho hiệu ứng -->
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+    // Khởi tạo hiệu ứng cuộn AOS
+    AOS.init({
+        once: true, // Chỉ chạy hiệu ứng 1 lần khi cuộn xuống
+        offset: 50
+    });
+</script>
+{% endblock %}

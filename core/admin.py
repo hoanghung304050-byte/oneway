@@ -18,7 +18,7 @@ class StoreAdmin(LeafletGeoAdmin):
         ('BƯỚC 2: XÁC ĐỊNH VỊ TRÍ CỬA HÀNG', {
             'fields': ('location',),
             'description': '''
-                <b>Ngài có 2 cách để lưu vị trí:</b><br>
+                <b>Bạn có 2 cách để lưu vị trí:</b><br>
                 - <b>Cách 1 (Tự động):</b> Nhập địa chỉ ở trên, sau đó bấm nút màu xanh "📍 Lấy tọa độ từ Địa chỉ".<br>
                 - <b>Cách 2 (Thủ công):</b> Sử dụng công cụ hình giọt nước (Draw a marker) bên trái bản đồ để tự chấm điểm tọa độ mong muốn.
             '''
@@ -28,3 +28,8 @@ class StoreAdmin(LeafletGeoAdmin):
     # Vẫn giữ nguyên file JS để xử lý nút bấm tự động
     class Media:
         js = ('js/admin_geocode.js',)
+
+from .models import CompanyInfo, CompanyImage
+
+admin.site.register(CompanyInfo)
+admin.site.register(CompanyImage)

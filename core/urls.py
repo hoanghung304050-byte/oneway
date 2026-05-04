@@ -1,11 +1,13 @@
 from django.conf import settings
 from django.conf.urls.static import static
-from django.urls import path
+from django.urls import path, re_path
+from django.views.static import serve
 from . import views
 
 urlpatterns = [
-    path('', views.home_view, name='home'), # Đường dẫn trống '' là trang chủ
+    path('', views.home_view, name='home'),
     path('gioi-thieu/', views.about, name='about'),
+    path('quan-tri/manage-about/', views.manage_about, name='manage_about'),
     path('bao-hanh/', views.warranty, name='warranty'),
     path('lien-he/', views.contact, name='contact'),
     path('map/', views.map_view, name='map_view'),
@@ -39,6 +41,13 @@ urlpatterns = [
     path('quan-ly-kho/', views.import_inventory_excel, name='inventory_management'),
     path('xuat-kho-excel/', views.export_inventory_excel, name='export_inventory_excel'),
     path('product/<int:product_id>/review/', views.submit_review, name='submit_review'),
+    path('upload-editor-image/', views.upload_editor_image, name='upload_editor_image'),
 ]
+
+urlpatterns += [
+    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+    re_path(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT}),
+]
+
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
